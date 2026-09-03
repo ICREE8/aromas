@@ -60,8 +60,8 @@ Output a valid JSON object strictly adhering to the schema.`;
           parts: [
             { text: systemPrompt },
             {
-              inline_data: {
-                mime_type: "image/jpeg",
+              inlineData: {
+                mimeType: "image/jpeg",
                 data: imageBase64
               }
             }
@@ -82,7 +82,10 @@ Output a valid JSON object strictly adhering to the schema.`;
     });
 
     if (!apiRes.ok) {
-      const fallback = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      const primaryErr = await apiRes.json().catch(() => ({}));
+      console.error("Gemini 2.5 Flash Primary Call Failed:", apiRes.status, primaryErr?.error?.message || JSON.stringify(primaryErr));
+
+      const fallback = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
       apiRes = await fetch(fallback, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
