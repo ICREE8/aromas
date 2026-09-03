@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aromas Inventory & Sales Dashboard</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Supabase Official JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0b0f19;
+      color: #f1f5f9;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d1424;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- Header Bar -->
+  <header class="sticky top-0 z-40 bg-[#0d1424]/95 backdrop-blur-md border-b border-slate-800/80 px-4 sm:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-3">
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-slate-950 font-black text-xl">
+          N
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-base font-extrabold tracking-tight text-white">INVENTORY</span>
+            <span id="badge-cloud-status" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              Supabase Connected
+            </span>
+          </div>
+          <p class="text-[11px] text-emerald-400 font-semibold tracking-wide">Aromas Live Team Vault</p>
+        </div>
+      </div>
+
+      <!-- Action Hub (Visible when authenticated) -->
+      <div id="header-actions" class="hidden flex items-center gap-2 sm:gap-2.5 flex-wrap">
+        <button id="btn-open-import" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-950/60 text-blue-300 border border-blue-600/40 hover:bg-blue-900/60 transition-all shadow-sm">
+          <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+          </svg>
+          Import from Google Sheet
+        </button>
+
+        <button id="btn-copy-sheets" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900/60 transition-all shadow-sm">
+          <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy for Google Sheets
+        </button>
+
+        <button id="btn-export-csv" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-all">
+          Export CSV
+        </button>
+
+        <button id="btn-open-add" class="flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 transition-all active:scale-95">
+          + Add Bottle
+        </button>
+
+        <!-- User profile badge & Logout -->
+        <div class="flex items-center gap-2 pl-2 border-l border-slate-800 ml-1">
+          <span id="user-email-display" class="text-[11px] text-slate-400 font-mono hidden sm:inline"></span>
+          <button id="btn-logout" class="text-[11px] font-semibold text-rose-400 hover:text-rose-300 px-2 py-1 rounded hover:bg-rose-500/10">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- LOGIN & REGISTRATION VIEW                                 -->
+  <!-- ========================================================= -->
+  <div id="view-login" class="flex-1 flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-800 w-full max-w-md rounded-2xl p-8 shadow-2xl space-y-6">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-black text-slate-950 text-2xl mx-auto shadow-lg shadow-emerald-500/25">
+          N
+        </div>
+        <h2 class="text-xl font-extrabold text-white tracking-tight">Aromas Team Vault</h2>
+        <p class="text-xs text-slate-400">Collaborative fragrance pricing, stock & sales platform.</p>
+      </div>
+
+      <!-- Tab Switcher: Sign In vs Sign Up -->
+      <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+        <button id="tab-btn-signin" type="button" onclick="switchAuthMode('signin')" class="flex-1 py-1.5 font-bold rounded-lg bg-emerald-500 text-slate-950 transition-all">
+          Sign In
+        </button>
+        <button id="tab-btn-signup" type="button" onclick="switchAuthMode('signup')" class="flex-1 py-1.5 font-semibold text-slate-400 hover:text-white transition-all">
+          Register New Member
+        </button>
+      </div>
+
+      <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-400 font-semibold mb-1.5">Team Email Address</label>
+          <input id="login-email" type="email" required placeholder="you@aromas.com" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500 text-xs">
+        </div>
+        <div>
+          <label class="block text-slate-400 font-semibold mb-1.5">Password</label>
+          <input id="login-password" type="password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-emerald-500 text-xs">
+        </div>
+
+        <button type="submit" id="btn-submit-login" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center">
+          <span id="btn-login-text">Sign In to Dashboard</span>
+        </button>
+
+        <!-- Detailed Error Feedback Box -->
+        <div id="login-error-box" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px] leading-relaxed">
+          <strong class="font-bold block mb-0.5">Authentication Notice:</strong>
+          <span id="login-error-msg"></span>
+        </div>
+
+        <!-- Offline / Guest Mode Bypass -->
+        <div class="pt-2 text-center border-t border-slate-800/80">
+          <button id="btn-bypass-offline" type="button" onclick="bypassOffline()" class="text-[11px] text-slate-400 hover:text-emerald-400 underline font-medium transition-colors cursor-pointer py-1 px-2">
+            Continue in Local Mode (Without Login)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- DASHBOARD VIEW (Shown once authenticated)                 -->
+  <!-- ========================================================= -->
+  <main id="view-dashboard" class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6 flex-1">
+
+    <!-- 1. Headline 4 KPI Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total In-Stock -->
+      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Total In-Stock</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/30">Units</span>
+        </div>
+        <div class="my-3 flex items-baseline gap-3">
+          <span id="metric-in-stock" class="text-3xl lg:text-4xl font-black text-white font-mono-num">0</span>
+          <span id="metric-sold" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            0 Sold
+          </span>
+        </div>
+        <div class="text-[11px] text-slate-400 flex items-center justify-between">
+          <span>Active verified inventory</span>
+          <span id="metric-total" class="text-slate-500 font-mono-num">0 Total</span>
+        </div>
+      </div>
+
+      <!-- Listed Price Value -->
+      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Listed Price Value</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Revenue</span>
+        </div>
+        <div class="my-3">
+          <span id="metric-listed" class="text-3xl lg:text-4xl font-black text-emerald-400 font-mono-num">$0.00</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Total expected revenue if all sell</p>
+      </div>
+
+      <!-- Retail MSRP Value -->
+      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Retail / MSRP Value</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-400 border border-purple-500/30">MSRP</span>
+        </div>
+        <div class="my-3">
+          <span id="metric-msrp" class="text-3xl lg:text-4xl font-black text-slate-200 font-mono-num">$0.00</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Original shelf market price</p>
+      </div>
+
+      <!-- Customer Savings -->
+      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Customer Savings</span>
+          <span id="metric-savings-pct" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30">
+            0.0% OFF
+          </span>
+        </div>
+        <div class="my-3">
+          <span id="metric-savings" class="text-3xl lg:text-4xl font-black text-rose-400 font-mono-num">$0.00</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Total buyer discounts offered</p>
+      </div>
+    </section>
+
+    <!-- 2. Analytics Row -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Brand Distribution -->
+      <div class="lg:col-span-8 bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 sm:p-6 flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">Brand Value Distribution</h3>
+            <p class="text-xs text-slate-400">Total dollar value breakdown per fragrance designer</p>
+          </div>
+          <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">
+            By Listed $
+          </span>
+        </div>
+        <div id="brand-bars-container" class="space-y-3 pt-2"></div>
+      </div>
+
+      <!-- Concentration & Condition Split -->
+      <div class="lg:col-span-4 bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 sm:p-6 flex flex-col justify-between shadow-sm">
+        <div>
+          <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">Concentration & Condition</h3>
+          <p class="text-xs text-slate-400 mb-4">Distribution by strength and packaging</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-center">
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">EDP</span>
+            <span id="conc-edp" class="text-2xl font-black text-emerald-400 font-mono-num">0</span>
+          </div>
+          <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-center">
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">EDT</span>
+            <span id="conc-edt" class="text-2xl font-black text-purple-400 font-mono-num">0</span>
+          </div>
+          <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-center">
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">PARFUM</span>
+            <span id="conc-parfum" class="text-2xl font-black text-amber-400 font-mono-num">0</span>
+          </div>
+          <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-center">
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">OTHER</span>
+            <span id="conc-other" class="text-2xl font-black text-sky-400 font-mono-num">0</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between p-3 bg-[#0d1424] rounded-xl border border-slate-800/80 text-xs">
+          <span>New Sealed: <strong id="condition-sealed" class="text-emerald-400 font-mono-num">0</strong></span>
+          <span>Testers / Specials: <strong id="condition-testers" class="text-sky-400 font-mono-num">0</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Search & Filter Bar -->
+    <section class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-sm">
+      <div class="relative flex-1">
+        <input id="search-input" type="text" placeholder="Search cologne name, brand, SKU..." class="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all">
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <select id="filter-brand" class="px-3 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-emerald-500">
+          <option value="ALL">All Brands</option>
+        </select>
+
+        <select id="filter-type" class="px-3 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-emerald-500">
+          <option value="ALL">All Types</option>
+          <option value="EDP">EDP</option>
+          <option value="EDT">EDT</option>
+          <option value="Parfum">Parfum</option>
+          <option value="Extrait">Extrait</option>
+        </select>
+
+        <select id="filter-status" class="px-3 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-emerald-500">
+          <option value="ALL">All Status</option>
+          <option value="In Stock">In Stock</option>
+          <option value="Sold">Sold</option>
+        </select>
+
+        <select id="filter-sort" class="px-3 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-emerald-500">
+          <option value="price-desc">Price: High to Low</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="discount-desc">Biggest Discount</option>
+          <option value="name">Name (A-Z)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- 4. Master Inventory Table -->
+    <div class="text-xs text-slate-400">
+      Showing <strong id="label-shown-count" class="text-white font-mono-num">0</strong> of <strong id="label-total-count" class="text-white font-mono-num">0</strong> bottles
+    </div>
+
+    <section class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 overflow-hidden shadow-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-800 bg-[#0d1424] text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+              <th class="py-3.5 px-4 w-28">SKU</th>
+              <th class="py-3.5 px-4">Fragrance & Brand</th>
+              <th class="py-3.5 px-4 w-28">Type</th>
+              <th class="py-3.5 px-4 w-28">Size</th>
+              <th class="py-3.5 px-4 w-40">Condition</th>
+              <th class="py-3.5 px-4 text-right w-32">Listed Price</th>
+              <th class="py-3.5 px-4 text-right w-32">Retail MSRP</th>
+              <th class="py-3.5 px-4 text-center w-32">Status</th>
+              <th class="py-3.5 px-4 text-center w-28">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventory-table-body" class="divide-y divide-slate-800/60 text-xs font-medium"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: Import from Google Sheet -->
+  <div id="modal-import" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-base font-bold text-white">Import from Google Sheet or CSV</h3>
+          <p class="text-xs text-slate-400">Copy table rows directly from your Google Sheet or Excel and paste below.</p>
+        </div>
+        <button id="btn-close-import" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <textarea id="import-textarea" rows="8" placeholder="Example format (Ctrl+V from Google Sheet):&#10;MRP101&#9;Dior Sauvage&#9;Dior&#9;EDP&#9;3.4oz 100ml&#9;New Sealed&#9;135.00&#9;165.00&#9;In Stock&#10;MRP102&#9;Bleu de Chanel&#9;Chanel&#9;Parfum&#9;3.4oz 100ml&#9;New Sealed&#9;175.00&#9;210.00&#9;In Stock" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-100 font-mono text-xs focus:outline-none focus:border-blue-500"></textarea>
+
+      <div class="flex items-center justify-between text-xs text-slate-500">
+        <span>Saves directly to Supabase cloud database for all 3 users.</span>
+        <div class="flex gap-2">
+          <button id="btn-cancel-import" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button id="btn-submit-import" class="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-md">Import & Sync Rows</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add / Edit Single Bottle -->
+  <div id="modal-bottle" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modal-bottle-title" class="text-base font-bold text-white">Add Fragrance Bottle</h3>
+        <button id="btn-close-bottle" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <form id="form-bottle" class="space-y-3 text-xs">
+        <input type="hidden" id="bottle-id" />
+
+        <div>
+          <label class="block text-slate-400 font-semibold mb-1">Fragrance Name</label>
+          <input id="bottle-name" required placeholder="e.g. Sauvage Elixir, 212 VIP" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Brand</label>
+            <input id="bottle-brand" required placeholder="e.g. Dior, Creed" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Concentration</label>
+            <select id="bottle-conc" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+              <option value="EDP">EDP</option>
+              <option value="EDT">EDT</option>
+              <option value="Parfum">Parfum</option>
+              <option value="Extrait">Extrait</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Bottle Size</label>
+            <input id="bottle-size" placeholder="3.4oz 100ml" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-semibold mb-1">Condition</label>
+            <input id="bottle-condition" placeholder="New Sealed" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-emerald-400 font-bold mb-1">Listed Price ($)</label>
+            <input id="bottle-listed" type="number" step="0.01" required placeholder="120.00" class="w-full px-3 py-2 bg-slate-900 border border-emerald-500/50 rounded-lg text-emerald-300 font-mono-num font-bold focus:outline-none focus:border-emerald-400">
+          </div>
+          <div>
+            <label class="block text-purple-400 font-bold mb-1">Retail MSRP ($)</label>
+            <input id="bottle-msrp" type="number" step="0.01" placeholder="165.00" class="w-full px-3 py-2 bg-slate-900 border border-purple-500/50 rounded-lg text-purple-300 font-mono-num font-bold focus:outline-none focus:border-purple-400">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 font-semibold mb-1">Warehouse Location</label>
+          <input id="bottle-warehouse" placeholder="Location A: 1" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" id="btn-cancel-bottle" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-md">Save Bottle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT LOGIC & SUPABASE INTEGRATION                   -->
+  <!-- ========================================================= -->
+  <script>
+    console.log("Aromas Dashboard script initializing...");
+
+    // ==============================================================
+    // 1. CONFIGURED SUPABASE CREDENTIALS
+    // ==============================================================
+    const SUPABASE_URL = "https://gcsjomsaaagdnkbfbmwr.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_Nuz55EJjKlX32sT4F3vexA_kkEq6fWj";
+
+    // ==============================================================
+    // 2. SUPABASE CLIENT & RUNTIME STATE
+    // Using window.sbClient to avoid any global namespace clashes
+    // ==============================================================
+    window.sbClient = null;
+    let items = [];
+    let currentUser = null;
+    let authMode = "signin";
+
+    try {
+      if (window.supabase && typeof window.supabase.createClient === "function") {
+        window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Supabase client initialized successfully.");
+      }
+    } catch (e) {
+      console.warn("Supabase client init note:", e);
+    }
+
+    const formatMoney = (n) =>
+      "$" +
+      Number(n || 0).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+    function showToast(msg) {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+      const toast = document.createElement("div");
+      toast.className = "bg-slate-900 text-emerald-300 border border-emerald-500/40 px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transition-all duration-300";
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>${msg}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    // Direct toggle handlers
+    window.switchAuthMode = function(mode) {
+      authMode = mode;
+      const signinBtn = document.getElementById("tab-btn-signin");
+      const signupBtn = document.getElementById("tab-btn-signup");
+      const submitText = document.getElementById("btn-login-text");
+      const errorBox = document.getElementById("login-error-box");
+      if (errorBox) errorBox.classList.add("hidden");
+
+      if (mode === "signin") {
+        signinBtn.className = "flex-1 py-1.5 font-bold rounded-lg bg-emerald-500 text-slate-950 transition-all";
+        signupBtn.className = "flex-1 py-1.5 font-semibold text-slate-400 hover:text-white transition-all";
+        submitText.textContent = "Sign In to Dashboard";
+      } else {
+        signupBtn.className = "flex-1 py-1.5 font-bold rounded-lg bg-emerald-500 text-slate-950 transition-all";
+        signinBtn.className = "flex-1 py-1.5 font-semibold text-slate-400 hover:text-white transition-all";
+        submitText.textContent = "Create Team Member Account";
+      }
+    };
+
+    // Direct local mode bypass handler
+    window.bypassOffline = function() {
+      console.log("Bypass clicked: loading local mode");
+      setLoggedInState({ email: "guest@aromas.local" });
+      showToast("Operating in Local / Offline Mode.");
+    };
+
+    // ==============================================================
+    // 3. AUTHENTICATION HANDLERS
+    // ==============================================================
+    async function checkSession() {
+      if (!window.sbClient) return;
+      try {
+        const { data: { session } } = await window.sbClient.auth.getSession();
+        if (session && session.user) {
+          setLoggedInState(session.user);
+        } else {
+          setLoggedOutState();
+        }
+      } catch (e) {
+        console.warn("Session check notice:", e);
+      }
+    }
+
+    function setLoggedInState(user) {
+      currentUser = user;
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("view-dashboard").classList.remove("hidden");
+      document.getElementById("header-actions").classList.remove("hidden");
+      document.getElementById("user-email-display").textContent = user.email || "Active Member";
+      
+      const badge = document.getElementById("badge-cloud-status");
+      badge.textContent = user.email === "guest@aromas.local" ? "Local Mode" : "Live Cloud Synced";
+      badge.className = "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+
+      if (user.email !== "guest@aromas.local") {
+        fetchInventory();
+        listenToRealtimeChanges();
+      } else {
+        renderDashboard();
+      }
+    }
+
+    function setLoggedOutState() {
+      currentUser = null;
+      items = [];
+      document.getElementById("view-login").classList.remove("hidden");
+      document.getElementById("view-dashboard").classList.add("hidden");
+      document.getElementById("header-actions").classList.add("hidden");
+
+      const badge = document.getElementById("badge-cloud-status");
+      badge.textContent = "Supabase Connected";
+      badge.className = "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+    }
+
+    // Direct form submit handler
+    window.handleLoginSubmit = async function(e) {
+      if (e) e.preventDefault();
+      if (!window.sbClient) {
+        showToast("Supabase client not initialized. Check connection.");
+        return;
+      }
+
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      const errorBox = document.getElementById("login-error-box");
+      const errorMsg = document.getElementById("login-error-msg");
+      if (errorBox) errorBox.classList.add("hidden");
+
+      const btn = document.getElementById("btn-submit-login");
+      const submitText = document.getElementById("btn-login-text");
+      const origText = submitText.textContent;
+      btn.disabled = true;
+      submitText.textContent = "Connecting to Supabase...";
+
+      try {
+        if (authMode === "signup") {
+          const { data, error } = await window.sbClient.auth.signUp({ email, password });
+          btn.disabled = false;
+          submitText.textContent = origText;
+
+          if (error) {
+            errorMsg.textContent = error.message;
+            errorBox.classList.remove("hidden");
+          } else if (data && data.user) {
+            if (data.session) {
+              setLoggedInState(data.user);
+              showToast("Account registered and logged in!");
+            } else {
+              showToast("Registered! Check Supabase email confirmation.");
+              errorMsg.textContent = "User created! If email confirmation is enabled in Supabase, confirm the email under Authentication -> Users.";
+              errorBox.classList.remove("hidden");
+            }
+          }
+        } else {
+          const { data, error } = await window.sbClient.auth.signInWithPassword({ email, password });
+          btn.disabled = false;
+          submitText.textContent = origText;
+
+          if (error) {
+            errorMsg.textContent = `${error.message}. (Click 'Register New Member' above if account is not created yet).`;
+            errorBox.classList.remove("hidden");
+          } else if (data && data.user) {
+            setLoggedInState(data.user);
+            showToast("Welcome back to Aromas Vault!");
+          }
+        }
+      } catch (err) {
+        btn.disabled = false;
+        submitText.textContent = origText;
+        errorMsg.textContent = err.message || "Network error connecting to Supabase.";
+        errorBox.classList.remove("hidden");
+      }
+    };
+
+    document.getElementById("btn-logout").addEventListener("click", async () => {
+      if (window.sbClient) {
+        try { await window.sbClient.auth.signOut(); } catch (e) {}
+      }
+      setLoggedOutState();
+      showToast("Signed out.");
+    });
+
+    // ==============================================================
+    // 4. SUPABASE INVENTORY FETCH & REAL-TIME LISTENER
+    // ==============================================================
+    async function fetchInventory() {
+      if (!window.sbClient) return;
+      try {
+        const { data, error } = await window.sbClient
+          .from("inventory")
+          .select("*")
+          .order("updated_at", { ascending: false });
+
+        if (error) {
+          console.warn("Table notice:", error.message);
+          renderDashboard();
+          return;
+        }
+
+        items = (data || []).map((row) => ({
+          id: row.id,
+          sku: row.sku,
+          name: row.name,
+          brand: row.brand,
+          concentration: row.concentration,
+          size: row.size,
+          condition: row.condition,
+          listedPrice: Number(row.listed_price) || 0,
+          retailMSRP: Number(row.retail_msrp) || 0,
+          status: row.status,
+          warehouse: row.warehouse,
+        }));
+
+        renderDashboard();
+      } catch (err) {
+        console.error("fetchInventory error:", err);
+      }
+    }
+
+    function listenToRealtimeChanges() {
+      if (!window.sbClient) return;
+      try {
+        window.sbClient
+          .channel("realtime-inventory-sync")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "inventory" },
+            () => {
+              fetchInventory();
+            }
+          )
+          .subscribe();
+      } catch (e) {
+        console.warn("Realtime listener error:", e);
+      }
+    }
+
+    // ==============================================================
+    // 5. DASHBOARD RENDERING
+    // ==============================================================
+    function renderDashboard() {
+      let inStock = 0;
+      let sold = 0;
+      let listedSum = 0;
+      let msrpSum = 0;
+      let brandMap = {};
+      let concMap = { EDP: 0, EDT: 0, Parfum: 0, Other: 0 };
+      let newSealedCount = 0;
+      let testersCount = 0;
+
+      items.forEach((item) => {
+        const list = Number(item.listedPrice) || 0;
+        const msrp = Number(item.retailMSRP) || list;
+
+        if (item.status === "In Stock") {
+          inStock++;
+          listedSum += list;
+          msrpSum += msrp;
+        } else {
+          sold++;
+        }
+
+        if (item.condition && item.condition.toLowerCase().includes("tester")) {
+          testersCount++;
+        } else {
+          newSealedCount++;
+        }
+
+        const conc = item.concentration || "Other";
+        if (concMap[conc] !== undefined) {
+          concMap[conc]++;
+        } else {
+          concMap.Other++;
+        }
+
+        const b = item.brand || "Other";
+        brandMap[b] = (brandMap[b] || 0) + list;
+      });
+
+      const savings = Math.max(0, msrpSum - listedSum);
+      const savingsPct = msrpSum > 0 ? (savings / msrpSum) * 100 : 0;
+
+      document.getElementById("metric-in-stock").textContent = inStock;
+      document.getElementById("metric-sold").textContent = `${sold} Sold`;
+      document.getElementById("metric-total").textContent = `${items.length} Total`;
+      document.getElementById("metric-listed").textContent = formatMoney(listedSum);
+      document.getElementById("metric-msrp").textContent = formatMoney(msrpSum);
+      document.getElementById("metric-savings").textContent = formatMoney(savings);
+      document.getElementById("metric-savings-pct").textContent = `${savingsPct.toFixed(1)}% OFF`;
+
+      document.getElementById("conc-edp").textContent = concMap.EDP;
+      document.getElementById("conc-edt").textContent = concMap.EDT;
+      document.getElementById("conc-parfum").textContent = concMap.Parfum;
+      document.getElementById("conc-other").textContent = concMap.Other;
+      document.getElementById("condition-sealed").textContent = newSealedCount;
+      document.getElementById("condition-testers").textContent = testersCount;
+
+      const brandEntries = Object.entries(brandMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
+      const brandContainer = document.getElementById("brand-bars-container");
+      if (brandEntries.length === 0) {
+        brandContainer.innerHTML = '<div class="text-xs text-slate-500 py-6 text-center">Paste inventory from your Google Sheet to see brand allocation.</div>';
+      } else {
+        const maxVal = brandEntries[0][1] || 1;
+        brandContainer.innerHTML = brandEntries
+          .map(([brand, val]) => {
+            const pct = Math.round((val / maxVal) * 100);
+            return `
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-semibold text-slate-200">${brand}</span>
+                  <span class="font-bold text-emerald-400 font-mono-num">${formatMoney(val)}</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: ${pct}%"></div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      const brandSelect = document.getElementById("filter-brand");
+      const currentBrand = brandSelect.value;
+      const uniqueBrands = Array.from(new Set(items.map((i) => i.brand).filter(Boolean))).sort();
+      brandSelect.innerHTML = `<option value="ALL">All Brands</option>` +
+        uniqueBrands.map((b) => `<option value="${b}" ${b === currentBrand ? "selected" : ""}>${b}</option>`).join("");
+
+      renderTable();
+    }
+
+    function renderTable() {
+      const q = document.getElementById("search-input").value.toLowerCase().trim();
+      const brandF = document.getElementById("filter-brand").value;
+      const typeF = document.getElementById("filter-type").value;
+      const statusF = document.getElementById("filter-status").value;
+      const sortK = document.getElementById("filter-sort").value;
+
+      let filtered = items.filter((it) => {
+        const matchesQuery =
+          !q ||
+          (it.name && it.name.toLowerCase().includes(q)) ||
+          (it.brand && it.brand.toLowerCase().includes(q)) ||
+          (it.sku && it.sku.toLowerCase().includes(q));
+
+        const matchesBrand = brandF === "ALL" || it.brand === brandF;
+        const matchesType = typeF === "ALL" || it.concentration === typeF;
+        const matchesStatus = statusF === "ALL" || it.status === statusF;
+
+        return matchesQuery && matchesBrand && matchesType && matchesStatus;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortK === "price-desc") return (b.listedPrice || 0) - (a.listedPrice || 0);
+        if (sortK === "price-asc") return (a.listedPrice || 0) - (b.listedPrice || 0);
+        if (sortK === "discount-desc") {
+          const discA = (a.retailMSRP || 0) - (a.listedPrice || 0);
+          const discB = (b.retailMSRP || 0) - (b.listedPrice || 0);
+          return discB - discA;
+        }
+        if (sortK === "name") return (a.name || "").localeCompare(b.name || "");
+        return 0;
+      });
+
+      document.getElementById("label-shown-count").textContent = filtered.length;
+      document.getElementById("label-total-count").textContent = items.length;
+
+      const tbody = document.getElementById("inventory-table-body");
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colSpan="9" class="py-16 px-4 text-center text-slate-400">
+              <div class="text-3xl mb-2">📋</div>
+              <div class="text-base font-bold text-white mb-1">Your Fragrance Vault is Ready</div>
+              <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+                Click below to paste your copied Google Sheet rows (Ctrl+V) directly into the shared cloud database.
+              </p>
+              <button onclick="document.getElementById('modal-import').classList.remove('hidden')" class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all">
+                + Paste from Google Sheet
+              </button>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered
+        .map((it) => {
+          const discount = Math.max(0, (it.retailMSRP || 0) - (it.listedPrice || 0));
+          const isSold = it.status === "Sold";
+
+          const concBadge =
+            it.concentration === "EDP"
+              ? "bg-emerald-500/15 text-emerald-400"
+              : it.concentration === "EDT"
+              ? "bg-purple-500/15 text-purple-400"
+              : "bg-amber-500/15 text-amber-400";
+
+          return `
+            <tr class="border-b border-slate-800/60 ${isSold ? "opacity-60 bg-slate-950/20" : "hover:bg-slate-800/30"}">
+              <td class="py-3 px-4 font-mono-num text-slate-400 font-bold">${it.sku}</td>
+              <td class="py-3 px-4">
+                <div class="font-bold text-white ${isSold ? "line-through text-slate-400" : ""}">${it.name}</div>
+                <div class="text-[11px] text-slate-400 font-semibold">${it.brand}</div>
+              </td>
+              <td class="py-3 px-4">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${concBadge}">${it.concentration}</span>
+              </td>
+              <td class="py-3 px-4 text-slate-300 font-mono-num">${it.size}</td>
+              <td class="py-3 px-4 text-slate-300">${it.condition}</td>
+              <td class="py-3 px-4 text-right font-bold text-emerald-400 font-mono-num">${formatMoney(it.listedPrice)}</td>
+              <td class="py-3 px-4 text-right font-mono-num text-slate-400">
+                <div>${formatMoney(it.retailMSRP)}</div>
+                ${discount > 0 ? `<div class="text-[10px] text-rose-400">Save ${formatMoney(discount)}</div>` : ""}
+              </td>
+              <td class="py-3 px-4 text-center">
+                <button onclick="toggleStatus('${it.id}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold ${isSold ? "bg-slate-800 text-slate-400" : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"}">
+                  ${isSold ? "✓ Sold" : "● In Stock"}
+                </button>
+              </td>
+              <td class="py-3 px-4 text-center">
+                <button onclick="editBottle('${it.id}')" class="text-slate-400 hover:text-white mr-2">Edit</button>
+                <button onclick="deleteBottle('${it.id}')" class="text-rose-400 hover:text-rose-300">Delete</button>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    // ==============================================================
+    // 6. CLOUD ACTIONS (Update status, Delete, Add, Import)
+    // ==============================================================
+    async function toggleStatus(id) {
+      const it = items.find((x) => x.id === id);
+      if (!it) return;
+      const next = it.status === "In Stock" ? "Sold" : "In Stock";
+      it.status = next;
+      renderDashboard();
+
+      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+        try {
+          await window.sbClient
+            .from("inventory")
+            .update({ status: next, updated_at: new Date().toISOString() })
+            .eq("id", id);
+          showToast(`"${it.name}" marked as ${next.toUpperCase()}`);
+        } catch (e) {
+          fetchInventory();
+        }
+      }
+    }
+
+    async function deleteBottle(id) {
+      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+        try {
+          await window.sbClient.from("inventory").delete().eq("id", id);
+        } catch (e) {}
+      }
+      items = items.filter((it) => it.id !== id);
+      showToast("Bottle removed from database.");
+      renderDashboard();
+    }
+
+    function editBottle(id) {
+      const it = items.find((x) => x.id === id);
+      if (!it) return;
+      document.getElementById("bottle-id").value = it.id;
+      document.getElementById("bottle-name").value = it.name;
+      document.getElementById("bottle-brand").value = it.brand;
+      document.getElementById("bottle-conc").value = it.concentration;
+      document.getElementById("bottle-size").value = it.size;
+      document.getElementById("bottle-condition").value = it.condition;
+      document.getElementById("bottle-listed").value = it.listedPrice;
+      document.getElementById("bottle-msrp").value = it.retailMSRP;
+      document.getElementById("bottle-warehouse").value = it.warehouse || "Location A: 1";
+      document.getElementById("modal-bottle-title").textContent = "Edit Fragrance Bottle";
+      document.getElementById("modal-bottle").classList.remove("hidden");
+    }
+
+    // Google Sheets paste importer
+    document.getElementById("btn-submit-import").addEventListener("click", async () => {
+      const text = document.getElementById("import-textarea").value.trim();
+      if (!text) return;
+
+      const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+      const rowsToInsert = [];
+
+      lines.forEach((line, idx) => {
+        const delimiter = line.includes("\t") ? "\t" : ",";
+        const cols = line.split(delimiter).map((c) => c.replace(/^["']|["']$/g, "").trim());
+
+        if (
+          idx === 0 &&
+          (cols[0].toLowerCase().includes("sku") || cols[1]?.toLowerCase().includes("name") || cols[0]?.toLowerCase().includes("fragrance"))
+        ) {
+          return;
+        }
+
+        if (cols.length >= 2) {
+          const sku = cols[0].startsWith("MRP") || cols[0].length < 10 ? cols[0] : `MRP${100 + idx}`;
+          const name = cols[1] || cols[0];
+          const brand = cols[2] || "Designer House";
+          const concentration = cols[3] || "EDP";
+          const size = cols[4] || "3.4oz 100ml";
+          const condition = cols[5] || "New Sealed";
+          const listed = parseFloat((cols[6] || "").replace(/[^0-9.]/g, "")) || 120.0;
+          const msrp = parseFloat((cols[7] || "").replace(/[^0-9.]/g, "")) || listed * 1.3;
+          const status = cols[8] && cols[8].toLowerCase().includes("sold") ? "Sold" : "In Stock";
+          const warehouse = cols[9] || "Location A: 1";
+
+          rowsToInsert.push({
+            id: `ARM-${Date.now()}-${idx}`,
+            sku,
+            name,
+            brand,
+            concentration,
+            size,
+            condition,
+            listed_price: listed,
+            retail_msrp: msrp,
+            status,
+            warehouse,
+            updated_at: new Date().toISOString()
+          });
+        }
+      });
+
+      if (rowsToInsert.length > 0) {
+        if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+          try {
+            await window.sbClient.from("inventory").upsert(rowsToInsert);
+          } catch (e) {
+            console.warn("Cloud upsert notice:", e);
+          }
+        }
+        document.getElementById("modal-import").classList.add("hidden");
+        document.getElementById("import-textarea").value = "";
+        showToast(`✨ Saved ${rowsToInsert.length} bottles to inventory!`);
+        if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+          fetchInventory();
+        } else {
+          items = [...rowsToInsert, ...items];
+          renderDashboard();
+        }
+      } else {
+        showToast("Could not parse rows. Ensure tab or comma separated format.");
+      }
+    });
+
+    // Single bottle form submit
+    document.getElementById("form-bottle").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById("bottle-id").value;
+      const listed = parseFloat(document.getElementById("bottle-listed").value) || 0;
+      const msrp = parseFloat(document.getElementById("bottle-msrp").value) || listed;
+
+      const payload = {
+        name: document.getElementById("bottle-name").value,
+        brand: document.getElementById("bottle-brand").value,
+        concentration: document.getElementById("bottle-conc").value,
+        size: document.getElementById("bottle-size").value,
+        condition: document.getElementById("bottle-condition").value,
+        listed_price: listed,
+        retail_msrp: msrp,
+        warehouse: document.getElementById("bottle-warehouse").value,
+        updated_at: new Date().toISOString()
+      };
+
+      if (editId) {
+        if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+          try { await window.sbClient.from("inventory").update(payload).eq("id", editId); } catch(e) {}
+        } else {
+          items = items.map((it) => it.id === editId ? { ...it, ...payload, listedPrice: listed, retailMSRP: msrp } : it);
+        }
+        showToast("Bottle updated.");
+      } else {
+        payload.id = `ARM-${Date.now()}`;
+        payload.sku = `MRP${Math.floor(100 + Math.random() * 899)}`;
+        payload.status = "In Stock";
+        if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+          try { await window.sbClient.from("inventory").insert([payload]); } catch(e) {}
+        } else {
+          items.unshift({ ...payload, listedPrice: listed, retailMSRP: msrp });
+        }
+        showToast(`Added "${payload.name}" to vault.`);
+      }
+
+      document.getElementById("modal-bottle").classList.add("hidden");
+      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+        fetchInventory();
+      } else {
+        renderDashboard();
+      }
+    });
+
+    // Copying TSV to paste back into Google Sheets
+    document.getElementById("btn-copy-sheets").addEventListener("click", () => {
+      if (items.length === 0) {
+        showToast("No items to copy.");
+        return;
+      }
+      const headers = ["SKU\tFragrance Name\tBrand\tConcentration\tBottle Size\tCondition\tListed Price\tRetail MSRP\tStatus\tWarehouse"];
+      const rows = items.map(
+        (i) => `${i.sku}\t${i.name}\t${i.brand}\t${i.concentration}\t${i.size}\t${i.condition}\t${i.listedPrice}\t${i.retailMSRP}\t${i.status}\t${i.warehouse}`
+      );
+      const text = [headers, ...rows].join("\n");
+
+      const el = document.createElement("textarea");
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      try {
+        document.execCommand("copy");
+        showToast(`📋 Copied ${items.length} rows! Ready to paste (Ctrl+V) into Google Sheets.`);
+      } catch (e) {
+        showToast("Clipboard copy failed.");
+      }
+      document.body.removeChild(el);
+    });
+
+    // Export CSV
+    document.getElementById("btn-export-csv").addEventListener("click", () => {
+      if (items.length === 0) {
+        showToast("No items to export.");
+        return;
+      }
+      const headers = ["SKU", "Fragrance Name", "Brand", "Concentration", "Size", "Condition", "Listed Price", "Retail MSRP", "Status", "Warehouse"];
+      const rows = items.map((i) => [
+        `"${i.sku}"`,
+        `"${(i.name || "").replace(/"/g, '""')}"`,
+        `"${(i.brand || "").replace(/"/g, '""')}"`,
+        `"${i.concentration}"`,
+        `"${i.size}"`,
+        `"${i.condition}"`,
+        i.listedPrice,
+        i.retailMSRP,
+        `"${i.status}"`,
+        `"${i.warehouse}"`,
+      ]);
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+      const encoded = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encoded);
+      link.setAttribute("download", "LOCIONES_2026.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("📁 Downloaded LOCIONES_2026.csv");
+    });
+
+    // Modal listeners
+    document.getElementById("btn-open-import").addEventListener("click", () => {
+      document.getElementById("modal-import").classList.remove("hidden");
+    });
+    document.getElementById("btn-close-import").addEventListener("click", () => {
+      document.getElementById("modal-import").classList.add("hidden");
+    });
+    document.getElementById("btn-cancel-import").addEventListener("click", () => {
+      document.getElementById("modal-import").classList.add("hidden");
+    });
+
+    document.getElementById("btn-open-add").addEventListener("click", () => {
+      document.getElementById("form-bottle").reset();
+      document.getElementById("bottle-id").value = "";
+      document.getElementById("modal-bottle-title").textContent = "Add Fragrance Bottle";
+      document.getElementById("modal-bottle").classList.remove("hidden");
+    });
+    document.getElementById("btn-close-bottle").addEventListener("click", () => {
+      document.getElementById("modal-bottle").classList.add("hidden");
+    });
+    document.getElementById("btn-cancel-bottle").addEventListener("click", () => {
+      document.getElementById("modal-bottle").classList.add("hidden");
+    });
+
+    // Live search & filters
+    ["search-input", "filter-brand", "filter-type", "filter-status", "filter-sort"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", renderTable);
+    });
+
+    // Check active session on boot
+    checkSession();
+  </script>
+</body>
+</html>
