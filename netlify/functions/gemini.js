@@ -74,24 +74,12 @@ Output a valid JSON object strictly adhering to the schema.`;
       }
     };
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    let apiRes = await fetch(endpoint, {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+    const apiRes = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody)
     });
-
-    if (!apiRes.ok) {
-      const primaryErr = await apiRes.json().catch(() => ({}));
-      console.error("Gemini 2.5 Flash Primary Call Failed:", apiRes.status, primaryErr?.error?.message || JSON.stringify(primaryErr));
-
-      const fallback = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-      apiRes = await fetch(fallback, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody)
-      });
-    }
 
     const data = await apiRes.json();
     if (!apiRes.ok) {
