@@ -440,11 +440,31 @@
           </div>
           <div class="col-span-1">
             <label class="block text-slate-400 font-semibold mb-1">Bottle Size</label>
-            <input id="bottle-size" placeholder="3.4oz 100ml" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+            <select id="bottle-size" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+              <option value="3.4 oz / 100 ml (Standard Full Size)">3.4 oz / 100 ml (Standard Full Size)</option>
+              <option value="3.3 oz / 100 ml">3.3 oz / 100 ml</option>
+              <option value="1.7 oz / 50 ml">1.7 oz / 50 ml</option>
+              <option value="2.5 oz / 75 ml">2.5 oz / 75 ml</option>
+              <option value="2.7 oz / 80 ml">2.7 oz / 80 ml</option>
+              <option value="4.2 oz / 125 ml">4.2 oz / 125 ml</option>
+              <option value="6.7 oz / 200 ml (Jumbo)">6.7 oz / 200 ml (Jumbo)</option>
+              <option value="1.0 oz / 30 ml">1.0 oz / 30 ml</option>
+              <option value="0.34 oz / 10 ml (Travel Spray)">0.34 oz / 10 ml (Travel Spray)</option>
+              <option value="5 ml - 10 ml (Miniature / Decant)">5 ml - 10 ml (Miniature / Decant)</option>
+              <option value="Other / Custom">Other / Custom</option>
+            </select>
           </div>
           <div class="col-span-1">
             <label class="block text-slate-400 font-semibold mb-1">Condition</label>
-            <input id="bottle-condition" placeholder="New Sealed" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+            <select id="bottle-condition" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500">
+              <option value="Brand New / Factory Sealed">Brand New / Factory Sealed</option>
+              <option value="New in Box (Unsealed / Opened Box)">New in Box (Unsealed / Opened Box)</option>
+              <option value="New Tester (With Box & Cap)">New Tester (With Box & Cap)</option>
+              <option value="New Tester (No Box / No Cap)">New Tester (No Box / No Cap)</option>
+              <option value="Like New / Sprayed Once or Twice (99% Full)">Like New / Sprayed Once or Twice (99% Full)</option>
+              <option value="Pre-Owned / Slightly Used (>90% Full)">Pre-Owned / Slightly Used (>90% Full)</option>
+              <option value="Vintage / Discontinued (Inspect Level)">Vintage / Discontinued (Inspect Level)</option>
+            </select>
           </div>
         </div>
 
@@ -609,9 +629,6 @@
     // ==============================================================
     const SUPABASE_URL = "https://gcsjomsaaagdnkbfbmwr.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_Nuz55EJjKlX32sT4F3vexA_kkEq6fWj";
-
-    // Gemini API Key configuration
-    const GEMINI_API_KEY = localStorage.getItem("aromas_gemini_api_key") || "AIzaSy_AROMAS_DEMO_VISION_KEY";
 
     // ==============================================================
     // 2. SUPABASE CLIENT & RUNTIME STATE
@@ -1057,25 +1074,20 @@
       }
     };
 
-    // Task 2: Inline Quantity Stepper Handler (+ / -)
+    // Inline Quantity Stepper Handler (+ / -)
     window.adjustQty = async function(id, delta) {
       const it = items.find((x) => x.id === id);
       if (!it) return;
 
-      const currentQty = Number(it.qty) || 1;
+      const currentQty = (it.qty !== undefined && it.qty !== null) ? Number(it.qty) : 1;
       const newQty = currentQty + delta;
 
       if (newQty <= 0) {
-        const confirmSold = confirm(`Quantity reached 0 for "${it.name}". Toggle status to "Sold"?`);
-        if (confirmSold) {
-          it.qty = 0;
-          it.status = "Sold";
-        } else {
-          return;
-        }
+        it.qty = 0;
+        it.status = "Sold";
       } else {
         if (it.status === "Sold") {
-          it.status = (it.listedPrice === null || it.listedPrice === undefined || Number(it.listedPrice) === 0) ? "Needs Price" : "In Stock";
+          it.status = (it.listedPrice ? "In Stock" : "Needs Price");
         }
         it.qty = newQty;
       }
@@ -1237,7 +1249,7 @@
 
         const qtyValSpan = document.createElement("span");
         qtyValSpan.className = "w-6 text-center font-bold text-white";
-        qtyValSpan.textContent = it.qty || 1;
+        qtyValSpan.textContent = (it.qty !== undefined && it.qty !== null) ? it.qty : 1;
 
         const btnPlus = document.createElement("button");
         btnPlus.className = "w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center transition-colors cursor-pointer";
@@ -1348,9 +1360,23 @@
       document.getElementById("bottle-name").value = it.name || "";
       document.getElementById("bottle-brand").value = it.brand || "";
       document.getElementById("bottle-conc").value = it.concentration || "EDP";
-      document.getElementById("bottle-qty").value = it.qty || 1;
-      document.getElementById("bottle-size").value = it.size || "";
-      document.getElementById("bottle-condition").value = it.condition || "";
+      document.getElementById("bottle-qty").value = (it.qty !== undefined && it.qty !== null) ? it.qty : 1;
+
+      const sizeSelect = document.getElementById("bottle-size");
+      sizeSelect.value = it.size || "3.4 oz / 100 ml (Standard Full Size)";
+      if (!sizeSelect.value && it.size) {
+        const matchingOpt = Array.from(sizeSelect.options).find(opt => opt.value.toLowerCase().includes(it.size.toLowerCase()) || it.size.toLowerCase().includes(opt.value.split(' ')[0]));
+        if (matchingOpt) sizeSelect.value = matchingOpt.value;
+        else sizeSelect.value = "Other / Custom";
+      }
+
+      const condSelect = document.getElementById("bottle-condition");
+      condSelect.value = it.condition || "Brand New / Factory Sealed";
+      if (!condSelect.value && it.condition) {
+        const matchingOpt = Array.from(condSelect.options).find(opt => opt.value.toLowerCase().includes(it.condition.toLowerCase()));
+        if (matchingOpt) condSelect.value = matchingOpt.value;
+        else condSelect.value = "Brand New / Factory Sealed";
+      }
       document.getElementById("bottle-listed").value = (it.listedPrice !== null && it.listedPrice !== undefined) ? it.listedPrice : "";
       document.getElementById("bottle-msrp").value = (it.retailMSRP !== null && it.retailMSRP !== undefined) ? it.retailMSRP : "";
       document.getElementById("bottle-warehouse").value = it.warehouse || "Location A: 1";
@@ -1661,9 +1687,12 @@
       }
     }
 
-    // Task 3: Exhaustive System Prompt & Gemini API Call (Zero Guessing & Strict Schema)
+    // Vision Scanner Call via Netlify Function
     document.getElementById("btn-analyze-photo").addEventListener("click", async () => {
-      if (!currentDownsampledImage) return;
+      if (!currentDownsampledImage || !currentDownsampledImage.base64Data) {
+        showToast("Please upload an image first.");
+        return;
+      }
 
       const analyzeBtn = document.getElementById("btn-analyze-photo");
       const btnText = document.getElementById("scanner-btn-text");
@@ -1682,91 +1711,21 @@
       scanningMsg.textContent = "⚡ Running Forensic OCR & Spatial Attention Grid Segmentation...";
       statusBox.appendChild(scanningMsg);
 
-      const systemPrompt = `You are a forensic luxury fragrance inventory specialist and OCR cataloguer.
-Your job is to inspect dense photographs of perfume boxes, bottles, and wholesale deliveries.
-
-CRITICAL SEGMENTATION RULES:
-1. Systematically scan row-by-row, from top-left to bottom-right across the ENTIRE frame.
-2. Identify EVERY distinct bottle or box visible, even if partially occluded or in the background.
-3. Actively search for and extract the stamped/embossed BATCH CODE or etching (e.g., "38U600", "9140AM", "2109") on each unit. If occluded, set batchCode to null.
-4. If multiple identical bottles of the same fragrance and size are sitting together, increment the "qty" field rather than repeating rows.
-5. DO NOT estimate, predict, or guess retail prices or MSRP. Leave price fields completely out or null.
-6. Accurately identify concentration: EDP, EDT, Parfum, Extrait, or Cologne.
-
-Output a valid JSON object strictly adhering to the schema.`;
-
-      const responseSchema = {
-        type: "OBJECT",
-        properties: {
-          total_boxes_detected: {
-            type: "INTEGER",
-            description: "Total count of physical boxes or bottles visible across the photo grid"
-          },
-          items: {
-            type: "ARRAY",
-            items: {
-              type: "OBJECT",
-              properties: {
-                batchCode: { type: "STRING" },
-                name: { type: "STRING" },
-                brand: { type: "STRING" },
-                concentration: { type: "STRING" },
-                size: { type: "STRING" },
-                condition: { type: "STRING" },
-                qty: { type: "INTEGER" }
-              },
-              required: ["name", "brand", "concentration", "size", "qty"]
-            }
-          }
-        },
-        required: ["total_boxes_detected", "items"]
-      };
-
-      const requestBody = {
-        contents: [
-          {
-            parts: [
-              { text: systemPrompt },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: currentDownsampledImage.base64Data,
-                },
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: responseSchema
-        }
-      };
-
       try {
-        const apiKeyToUse = GEMINI_API_KEY;
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKeyToUse}`;
-        
-        let response = await fetch(endpoint, {
+        const response = await fetch("/.netlify/functions/gemini", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify({
+            imageBase64: currentDownsampledImage.base64Data
+          })
         });
 
-        if (!response.ok) {
-          const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKeyToUse}`;
-          response = await fetch(fallbackEndpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestBody),
-          });
-        }
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData?.error?.message || `API error (${response.status})`);
-        }
-
         const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.error || `Serverless API error (${response.status})`);
+        }
+
         const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
 
@@ -1799,8 +1758,8 @@ Output a valid JSON object strictly adhering to the schema.`;
           name: (b.name || "Unnamed Fragrance").trim(),
           brand: (b.brand || "Designer House").trim(),
           concentration: ["EDP", "EDT", "Parfum", "Extrait", "Cologne"].includes(b.concentration) ? b.concentration : "EDP",
-          size: b.size || "3.4oz 100ml",
-          condition: b.condition || "New Sealed",
+          size: b.size || "3.4 oz / 100 ml (Standard Full Size)",
+          condition: b.condition || "Brand New / Factory Sealed",
           qty: Number(b.qty) || 1
         }));
 
@@ -1816,13 +1775,12 @@ Output a valid JSON object strictly adhering to the schema.`;
 
       } catch (err) {
         console.error("Gemini Vision Error:", err);
-        // Task 3: Zero Mock Fallbacks - fail loudly via toast!
         showToast(`⚠️ Scan Failed: ${err.message || "Could not segment image."}`);
         
         statusBox.replaceChildren();
         const errDiv = document.createElement("div");
         errDiv.className = "text-rose-400 font-bold text-xs";
-        errDiv.textContent = `❌ Scan Error: ${err.message || "Failed to analyze photo"}. Please try again or check API key.`;
+        errDiv.textContent = `❌ Scan Error: ${err.message || "Failed to analyze photo"}.`;
         statusBox.appendChild(errDiv);
 
       } finally {
