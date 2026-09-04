@@ -368,7 +368,7 @@
               <th class="py-3.5 px-4 text-right w-32">Listed Price</th>
               <th class="py-3.5 px-4 text-right w-32">Retail MSRP</th>
               <th class="py-3.5 px-4 text-center w-36">Status</th>
-              <th class="py-3.5 px-4 text-center w-28">Actions</th>
+              <th class="py-3.5 px-4 text-center w-44">Actions</th>
             </tr>
           </thead>
           <tbody id="inventory-table-body" class="divide-y divide-slate-800/60 text-xs font-medium"></tbody>
@@ -660,6 +660,148 @@
   </div>
 
   <!-- ========================================================= -->
+  <!-- MODAL: Listing Studio & Marketplace SEO Generator (Phase 3 & 4) -->
+  <!-- ========================================================= -->
+  <div id="modal-listing-studio" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-[#111827] border border-slate-800 w-full max-w-6xl rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5 max-h-[92vh] flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/20">
+            🎬
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="studio-modal-title" class="text-base font-extrabold text-white tracking-tight">Listing Studio & Marketplace Packet</h3>
+              <span id="studio-item-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-mono font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">Item-1</span>
+            </div>
+            <p id="studio-modal-subtitle" class="text-xs text-slate-400">8-Photo media engine, automated marketplace SEO title, and cross-posting copy for eBay & Mercari</p>
+          </div>
+        </div>
+        <button id="btn-close-studio" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">✕</button>
+      </div>
+
+      <!-- Body: Dual Column -->
+      <div class="flex-1 overflow-y-auto space-y-5 pr-1">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+          <!-- Column A: 8-Photo Carousel & Media Engine -->
+          <div class="lg:col-span-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Media Engine</span>
+                <span class="text-[10px] text-slate-500 font-semibold">(Max 8 Photos)</span>
+              </div>
+              <span id="studio-photo-count" class="text-xs font-mono font-bold text-indigo-400">0 / 8 Photos</span>
+            </div>
+
+            <!-- Drag & Drop / File Input Zone -->
+            <input type="file" id="studio-file-input" accept="image/*" multiple class="hidden">
+            <div id="studio-drop-zone" class="border-2 border-dashed border-slate-700 hover:border-indigo-500/60 bg-slate-900/60 hover:bg-slate-900 rounded-xl p-4 text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 group">
+              <div class="w-9 h-9 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-base group-hover:scale-110 transition-transform">
+                📸
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-200">Click or drag & drop photos here</p>
+                <p class="text-[10px] text-slate-500">Auto-downsampled to 1600x1600 @ 0.85 JPEG for fast cloud sync</p>
+              </div>
+            </div>
+
+            <!-- 8-Photo Slots Grid (4 columns x 2 rows) -->
+            <div id="studio-photo-grid" class="grid grid-cols-4 gap-2.5"></div>
+          </div>
+
+          <!-- Column B: Listing Form & Marketplace Metadata -->
+          <div class="lg:col-span-7 space-y-4">
+            <!-- Category & Condition Dropdowns -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-slate-400 font-semibold text-xs mb-1">Category Selector</label>
+                <select id="studio-category" class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                  <option value="Men's Designer">Men's Designer</option>
+                  <option value="Women's Designer">Women's Designer</option>
+                  <option value="Unisex Niche">Unisex Niche</option>
+                  <option value="Vintage / Discontinued">Vintage / Discontinued</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-slate-400 font-semibold text-xs mb-1">Condition Selector</label>
+                <select id="studio-condition" class="w-full px-3 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500">
+                  <option value="Brand New / Factory Sealed (NIB)">Brand New / Factory Sealed (NIB)</option>
+                  <option value="New without Box (NWOB)">New without Box (NWOB)</option>
+                  <option value="Gently Used (95%+ Full)">Gently Used (95%+ Full)</option>
+                  <option value="Pre-Owned / Tester">Pre-Owned / Tester</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- UPC / GTIN Input -->
+            <div>
+              <label class="block text-slate-400 font-semibold text-xs mb-1">UPC / GTIN Barcode</label>
+              <input id="studio-upc" type="text" placeholder="e.g. 3349668515660 or 085715165147" class="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <!-- Listing Title Section with Auto-Generator -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <label class="block text-indigo-400 font-bold text-xs">Generated Listing Title</label>
+                  <span id="studio-title-count" class="text-[11px] font-mono text-slate-400">0 / 80 chars</span>
+                </div>
+                <button id="btn-gen-seo-title" type="button" class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30 transition-all cursor-pointer">
+                  <span>⚡</span>
+                  <span>Auto-Generate SEO Title</span>
+                </button>
+              </div>
+              <input id="studio-title" type="text" placeholder="[Brand] [Product Name] [Concentration] [Size] [Condition] [Packaging]" class="w-full px-3.5 py-2 text-xs bg-slate-900 border border-indigo-500/50 rounded-xl text-white font-medium focus:outline-none focus:border-indigo-400">
+            </div>
+
+            <!-- Description Section with Template Generator -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label class="block text-slate-300 font-bold text-xs">Rich Description</label>
+                <button id="btn-gen-description" type="button" class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-all cursor-pointer">
+                  <span>📝</span>
+                  <span>Generate Description Template</span>
+                </button>
+              </div>
+              <textarea id="studio-description" rows="7" placeholder="Detailed fragrance notes, authenticity guarantee, shipping specifics..." class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 text-xs font-mono focus:outline-none focus:border-indigo-500 leading-relaxed"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions & Quick-Copy Bar -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-slate-800 pt-4">
+        <!-- Quick Copy Buttons -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btn-copy-title" type="button" class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer">
+            <span>📋</span>
+            <span>Copy Title</span>
+          </button>
+          <button id="btn-copy-desc" type="button" class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer">
+            <span>📋</span>
+            <span>Copy Description</span>
+          </button>
+          <button id="btn-copy-packet" type="button" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-900/60 to-purple-900/60 hover:from-indigo-800/80 hover:to-purple-800/80 text-indigo-200 text-xs font-bold border border-indigo-500/40 transition-all cursor-pointer shadow-sm">
+            <span>📋</span>
+            <span>Copy Complete Packet</span>
+          </button>
+        </div>
+
+        <!-- Dialog Action Buttons -->
+        <div class="flex items-center gap-2 justify-end">
+          <button id="btn-cancel-studio" type="button" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold cursor-pointer">Cancel</button>
+          <button id="btn-save-studio" type="button" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
+            Save & Promote to In Stock
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
   <!-- JAVASCRIPT LOGIC & SUPABASE INTEGRATION                   -->
   <!-- ========================================================= -->
   <script>
@@ -940,8 +1082,9 @@
 
         items = (data || []).map((row) => {
           const listPrice = row.listed_price !== null && row.listed_price !== undefined ? Number(row.listed_price) : null;
-          const hasPhotos = Boolean(row.photos && (Array.isArray(row.photos) ? row.photos.length > 0 : String(row.photos).trim() !== ""));
-          const hasListingCopy = Boolean((row.listing_copy || row.copy) && String(row.listing_copy || row.copy).trim() !== "");
+          const photosArr = row.photos || row.image_urls;
+          const hasPhotos = Boolean(photosArr && (Array.isArray(photosArr) ? photosArr.length > 0 : String(photosArr).trim() !== ""));
+          const hasListingCopy = Boolean((row.listing_copy || row.listing_description || row.copy) && String(row.listing_copy || row.listing_description || row.copy).trim() !== "");
 
           let initialStatus = row.status;
           if (!initialStatus) {
@@ -965,8 +1108,17 @@
             retailMSRP: row.retail_msrp !== null && row.retail_msrp !== undefined ? Number(row.retail_msrp) : null,
             status: initialStatus,
             warehouse: row.warehouse,
-            photos: row.photos || null,
-            listingCopy: row.listing_copy || row.copy || null,
+            photos: row.photos || row.image_urls || null,
+            image_urls: row.image_urls || row.photos || null,
+            listingCopy: row.listing_copy || row.listing_description || row.copy || null,
+            listingTitle: row.listing_title || null,
+            listing_title: row.listing_title || null,
+            listingDescription: row.listing_description || row.listing_copy || null,
+            listing_description: row.listing_description || row.listing_copy || null,
+            listingCategory: row.listing_category || null,
+            listing_category: row.listing_category || null,
+            upcGtin: row.upc_gtin || null,
+            upc_gtin: row.upc_gtin || null,
           };
         });
 
@@ -1561,7 +1713,13 @@
 
         // Actions
         const tdActions = document.createElement("td");
-        tdActions.className = "py-3 px-4 text-center";
+        tdActions.className = "py-3 px-4 text-center whitespace-nowrap";
+        
+        const studioBtn = document.createElement("button");
+        studioBtn.className = "px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 transition-all mr-2 cursor-pointer";
+        studioBtn.textContent = "Studio";
+        studioBtn.onclick = () => openListingStudio(it.id);
+
         const editBtn = document.createElement("button");
         editBtn.className = "text-slate-400 hover:text-white mr-2 cursor-pointer";
         editBtn.textContent = "Edit";
@@ -1572,6 +1730,7 @@
         delBtn.textContent = "Delete";
         delBtn.onclick = () => deleteBottle(it.id);
 
+        tdActions.appendChild(studioBtn);
         tdActions.appendChild(editBtn);
         tdActions.appendChild(delBtn);
 
@@ -2501,6 +2660,542 @@
       currentPage++;
       renderTable();
     });
+
+    // ==============================================================
+    // 8. PHASE 3 & 4: LISTING STUDIO & MARKETPLACE SEO GENERATOR
+    // ==============================================================
+    let currentStudioItem = null;
+    let currentStudioPhotos = [];
+
+    // Client-side canvas downsampling (max 1600x1600 @ 0.85 JPEG)
+    function downsampleListingPhoto(file, maxDimension = 1600, quality = 0.85) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL("image/jpeg", quality);
+            resolve({ dataUrl, width, height });
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Supabase Storage uploader with dataUrl fallback
+    async function uploadListingPhoto(dataUrl, sku, index) {
+      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+        try {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const cleanSku = (sku || "item").replace(/[^a-zA-Z0-9_-]/g, "_");
+          const fileName = `${cleanSku}-${Date.now()}-${index}.jpg`;
+          const { data, error } = await window.sbClient.storage
+            .from("product-images")
+            .upload(fileName, blob, { contentType: "image/jpeg", upsert: true });
+          if (!error && data) {
+            const { data: pubUrl } = window.sbClient.storage
+              .from("product-images")
+              .getPublicUrl(fileName);
+            if (pubUrl?.publicUrl) return pubUrl.publicUrl;
+          }
+        } catch (e) {
+          console.warn("Storage upload notice (using optimized data URL):", e);
+        }
+      }
+      return dataUrl;
+    }
+
+    // Render 8-photo slot cards
+    function renderStudioPhotoSlots() {
+      const container = document.getElementById("studio-photo-grid");
+      if (!container) return;
+      container.replaceChildren();
+
+      const countEl = document.getElementById("studio-photo-count");
+      if (countEl) {
+        countEl.textContent = `${currentStudioPhotos.length} / 8 Photos`;
+      }
+
+      for (let i = 0; i < 8; i++) {
+        const photoUrl = currentStudioPhotos[i];
+        const slotCard = document.createElement("div");
+
+        if (photoUrl) {
+          // Filled slot
+          slotCard.className = "relative aspect-square rounded-xl overflow-hidden border border-slate-700 bg-slate-900 group shadow-sm";
+          
+          const img = document.createElement("img");
+          img.src = photoUrl;
+          img.alt = `Photo Slot ${i + 1}`;
+          img.className = "w-full h-full object-cover";
+          slotCard.appendChild(img);
+
+          // Cover Photo badge for slot 1
+          if (i === 0) {
+            const badge = document.createElement("span");
+            badge.className = "absolute top-1.5 left-1.5 text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 shadow";
+            badge.textContent = "⭐ Cover";
+            slotCard.appendChild(badge);
+          }
+
+          // Slot index number
+          const numSpan = document.createElement("span");
+          numSpan.className = "absolute bottom-1 right-1.5 text-[9px] font-mono font-bold text-slate-300 bg-slate-950/70 px-1 py-0.5 rounded";
+          numSpan.textContent = `#${i + 1}`;
+          slotCard.appendChild(numSpan);
+
+          // Remove button
+          const rmBtn = document.createElement("button");
+          rmBtn.type = "button";
+          rmBtn.className = "absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900/90 text-slate-300 hover:text-white hover:bg-rose-600 flex items-center justify-center text-xs transition-colors cursor-pointer shadow";
+          rmBtn.textContent = "✕";
+          rmBtn.title = "Remove photo";
+          rmBtn.onclick = (e) => {
+            e.stopPropagation();
+            removeStudioPhoto(i);
+          };
+          slotCard.appendChild(rmBtn);
+        } else {
+          // Empty slot
+          slotCard.className = "relative aspect-square rounded-xl border-2 border-dashed border-slate-700/80 hover:border-indigo-500/60 bg-slate-900/40 hover:bg-slate-900/70 flex flex-col items-center justify-center text-slate-500 hover:text-indigo-400 transition-all cursor-pointer group";
+          
+          const icon = document.createElement("span");
+          icon.className = "text-base mb-0.5 group-hover:scale-110 transition-transform";
+          icon.textContent = i === 0 ? "⭐" : "📷";
+
+          const label = document.createElement("span");
+          label.className = "text-[10px] font-bold font-mono";
+          label.textContent = i === 0 ? "Cover" : `Slot ${i + 1}`;
+
+          slotCard.appendChild(icon);
+          slotCard.appendChild(label);
+
+          slotCard.onclick = () => {
+            document.getElementById("studio-file-input")?.click();
+          };
+        }
+
+        container.appendChild(slotCard);
+      }
+    }
+
+    // Remove photo from Studio
+    window.removeStudioPhoto = function(index) {
+      if (index >= 0 && index < currentStudioPhotos.length) {
+        currentStudioPhotos.splice(index, 1);
+        renderStudioPhotoSlots();
+        showToast("Photo removed from Studio.");
+      }
+    };
+
+    // Open Listing Studio Drawer
+    window.openListingStudio = function(id) {
+      const it = items.find((x) => x.id === id);
+      if (!it) return;
+      currentStudioItem = it;
+
+      // Extract existing photos
+      const existingPhotos = Array.isArray(it.photos) 
+        ? it.photos 
+        : (it.photos ? [it.photos] : (Array.isArray(it.image_urls) ? it.image_urls : (it.image_urls ? [it.image_urls] : [])));
+      currentStudioPhotos = [...existingPhotos].slice(0, 8);
+
+      // Header details
+      document.getElementById("studio-item-badge").textContent = it.sku || "Item";
+      document.getElementById("studio-modal-subtitle").textContent = `"${it.name}" by ${it.brand} • ${it.concentration || "EDP"} • ${it.size || "Standard"} • ${it.listedPrice ? formatMoney(it.listedPrice) : "Unpriced"}`;
+
+      // Populate Category
+      const catSelect = document.getElementById("studio-category");
+      if (it.listingCategory || it.listing_category) {
+        catSelect.value = it.listingCategory || it.listing_category;
+      } else {
+        const b = (it.brand || "").toLowerCase();
+        const cond = (it.condition || "").toLowerCase();
+        if (cond.includes("vintage") || cond.includes("discontinued")) {
+          catSelect.value = "Vintage / Discontinued";
+        } else if (["creed", "parfums de marly", "amouage", "initio", "nishane", "roja", "xerjoff", "byredo", "diptyque", "maison margiela", "tom ford", "kilian"].some(n => b.includes(n))) {
+          catSelect.value = "Unisex Niche";
+        } else {
+          catSelect.value = "Men's Designer";
+        }
+      }
+
+      // Populate Condition
+      const condSelect = document.getElementById("studio-condition");
+      const itCond = (it.condition || "").toLowerCase();
+      if (itCond.includes("sealed") || itCond.includes("brand new")) {
+        condSelect.value = "Brand New / Factory Sealed (NIB)";
+      } else if (itCond.includes("unsealed") || itCond.includes("no box") || itCond.includes("opened box")) {
+        condSelect.value = "New without Box (NWOB)";
+      } else if (itCond.includes("tester")) {
+        condSelect.value = "Pre-Owned / Tester";
+      } else if (itCond.includes("used") || itCond.includes("sprayed") || itCond.includes("like new")) {
+        condSelect.value = "Gently Used (95%+ Full)";
+      } else {
+        condSelect.value = "Brand New / Factory Sealed (NIB)";
+      }
+
+      // Populate UPC / GTIN
+      document.getElementById("studio-upc").value = it.upcGtin || it.upc_gtin || it.upc || "";
+
+      // Populate Title & Description (auto-build if blank)
+      const titleInput = document.getElementById("studio-title");
+      titleInput.value = it.listingTitle || it.listing_title || "";
+      if (!titleInput.value) {
+        generateSeoTitle(false);
+      } else {
+        updateStudioTitleCount();
+      }
+
+      const descInput = document.getElementById("studio-description");
+      descInput.value = it.listingDescription || it.listing_description || it.listingCopy || "";
+      if (!descInput.value) {
+        generateDescriptionTemplate(false);
+      }
+
+      renderStudioPhotoSlots();
+      document.getElementById("modal-listing-studio").classList.remove("hidden");
+    };
+
+    function updateStudioTitleCount() {
+      const title = document.getElementById("studio-title")?.value || "";
+      const countEl = document.getElementById("studio-title-count");
+      if (countEl) {
+        countEl.textContent = `${title.length} / 80 chars`;
+        if (title.length > 80) {
+          countEl.className = "text-[11px] font-mono font-bold text-rose-400";
+        } else {
+          countEl.className = "text-[11px] font-mono text-slate-400";
+        }
+      }
+    }
+
+    // Dynamic SEO Title Builder (Phase 4.1)
+    function generateSeoTitle(notify = true) {
+      if (!currentStudioItem) return;
+      const it = currentStudioItem;
+      const brand = (it.brand || "").trim();
+      const name = (it.name || "").trim();
+
+      // Concentration expansion
+      let conc = (it.concentration || "").trim();
+      if (conc.toUpperCase() === "EDP") conc = "Eau de Parfum";
+      else if (conc.toUpperCase() === "EDT") conc = "Eau de Toilette";
+      else if (conc.toUpperCase() === "PARFUM") conc = "Parfum";
+      else if (conc.toUpperCase() === "EXTRAIT") conc = "Extrait de Parfum";
+      else if (conc.toUpperCase() === "COLOGNE") conc = "Eau de Cologne";
+
+      // Clean size in oz & ml
+      let size = (it.size || "").trim();
+      const sizeMatch = size.match(/(\d+(?:\.\d+)?\s*(?:oz|fl\.?\s*oz)?\s*\/?\s*\d+(?:\.\d+)?\s*ml)/i);
+      if (sizeMatch) {
+        size = sizeMatch[1].replace(/\s*\/\s*/g, " / ");
+      } else {
+        size = size.split("(")[0].trim();
+      }
+
+      // Condition shorthand
+      const condVal = document.getElementById("studio-condition")?.value || it.condition || "";
+      let condShort = "NIB";
+      if (condVal.includes("NIB") || condVal.includes("Sealed")) condShort = "NIB";
+      else if (condVal.includes("NWOB") || condVal.includes("without Box")) condShort = "NWOB";
+      else if (condVal.includes("Tester")) condShort = "New Tester";
+      else if (condVal.includes("Used") || condVal.includes("Gently")) condShort = "Pre-Owned";
+
+      // Special features from name or packaging
+      const combined = `${name} ${it.condition || ""}`.toLowerCase();
+      let special = "";
+      if (combined.includes("discontinued")) special = "Discontinued";
+      else if (combined.includes("vintage")) special = "Vintage";
+      else if (combined.includes("limited edition") || combined.includes("special edition") || combined.includes("collector")) special = "Collector Edition";
+      else if (combined.includes("snake")) special = "Year of the Snake";
+
+      const parts = [brand, name, conc, size, condShort, special].filter(Boolean);
+      const title = parts.join(" ").replace(/\s+/g, " ").trim();
+
+      const titleInput = document.getElementById("studio-title");
+      if (titleInput) {
+        titleInput.value = title;
+        updateStudioTitleCount();
+      }
+      if (notify) showToast("⚡ Auto-generated marketplace SEO title!");
+    }
+
+    // Smart Description Builder (Phase 4.2)
+    function generateDescriptionTemplate(notify = true) {
+      if (!currentStudioItem) return;
+      const it = currentStudioItem;
+      const brand = (it.brand || "").trim();
+      const name = (it.name || "").trim();
+      const conc = (it.concentration || "EDP").trim();
+      const size = (it.size || "3.4 oz / 100 ml").trim();
+      const cond = document.getElementById("studio-condition")?.value || it.condition || "Brand New / Factory Sealed";
+      const upc = document.getElementById("studio-upc")?.value.trim() || it.upcGtin || "N/A";
+      const sku = it.sku || "N/A";
+
+      const template = `✨ 100% AUTHENTIC GUARANTEED ✨
+
+• Fragrance House: ${brand}
+• Fragrance Name: ${name}
+• Formulation: ${conc}
+• Bottle Size: ${size}
+• Condition: ${cond}
+• UPC / Barcode: ${upc}
+• Vault Reference Code: ${sku}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 AUTHENTICITY & CLIMATE-CONTROLLED STORAGE:
+Every bottle in our private inventory is 100% guaranteed authentic, verified for batch code legitimacy, and inspected for complete atomizer and cap integrity prior to listing. Stored strictly in a dedicated climate-controlled, dark fragrance humidor to safeguard the oils and top-note profile.
+
+📦 FAST, RELIABLE SHIPPING:
+• Packaged with premium heavy-duty bubble wrap and crush-proof corrugated boxing.
+• Dispatched promptly within 24 business hours with active tracking provided immediately.
+• Buy with absolute peace of mind from a 5-star fragrance collector!`;
+
+      const descEl = document.getElementById("studio-description");
+      if (descEl) {
+        descEl.value = template;
+      }
+      if (notify) showToast("📝 Generated Description Template!");
+    }
+
+    // Clipboard Copy Helper
+    function copyTextToClipboard(text, successMsg) {
+      if (!text) return showToast("Nothing to copy.");
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(successMsg);
+        }).catch(() => {
+          fallbackCopy(text, successMsg);
+        });
+      } else {
+        fallbackCopy(text, successMsg);
+      }
+    }
+
+    function fallbackCopy(text, successMsg) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast(successMsg);
+      } catch (e) {
+        showToast("Clipboard copy failed.");
+      }
+      document.body.removeChild(ta);
+    }
+
+    // Save Studio Listing (Phase 4.4)
+    async function saveStudioListing() {
+      if (!currentStudioItem) return;
+      const it = currentStudioItem;
+      const title = document.getElementById("studio-title")?.value.trim() || "";
+      const desc = document.getElementById("studio-description")?.value.trim() || "";
+      const category = document.getElementById("studio-category")?.value || "";
+      const condition = document.getElementById("studio-condition")?.value || it.condition;
+      const upc = document.getElementById("studio-upc")?.value.trim() || "";
+
+      // When saved with listing data, if status was "Needs Listing", automatically promote to "In Stock"
+      let newStatus = it.status;
+      if (newStatus === "Needs Listing") {
+        newStatus = "In Stock";
+      }
+
+      // Update local item
+      it.listing_title = title;
+      it.listingTitle = title;
+      it.listing_description = desc;
+      it.listingDescription = desc;
+      it.listingCopy = desc;
+      it.listing_category = category;
+      it.listingCategory = category;
+      it.upc_gtin = upc;
+      it.upcGtin = upc;
+      it.photos = [...currentStudioPhotos];
+      it.image_urls = [...currentStudioPhotos];
+      it.status = newStatus;
+      if (condition) it.condition = condition;
+
+      const saveBtn = document.getElementById("btn-save-studio");
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+      }
+
+      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+        try {
+          const payload = {
+            listing_title: title,
+            listing_description: desc,
+            listing_category: category,
+            upc_gtin: upc,
+            photos: currentStudioPhotos,
+            image_urls: currentStudioPhotos,
+            status: newStatus,
+            condition: it.condition,
+            updated_at: new Date().toISOString()
+          };
+          await window.sbClient
+            .from("inventory")
+            .update(payload)
+            .eq("id", it.id);
+        } catch (e) {
+          console.warn("Cloud studio update notice:", e);
+        }
+      }
+
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save & Promote to In Stock";
+      }
+
+      document.getElementById("modal-listing-studio").classList.add("hidden");
+      renderDashboard();
+      showToast(`✅ Saved listing for "${it.name}"! Status: ${newStatus.toUpperCase()}`);
+    }
+
+    // Studio Event Listeners
+    document.getElementById("btn-close-studio")?.addEventListener("click", () => {
+      document.getElementById("modal-listing-studio").classList.add("hidden");
+    });
+    document.getElementById("btn-cancel-studio")?.addEventListener("click", () => {
+      document.getElementById("modal-listing-studio").classList.add("hidden");
+    });
+
+    document.getElementById("btn-gen-seo-title")?.addEventListener("click", () => generateSeoTitle(true));
+    document.getElementById("btn-gen-description")?.addEventListener("click", () => generateDescriptionTemplate(true));
+    document.getElementById("studio-title")?.addEventListener("input", updateStudioTitleCount);
+
+    document.getElementById("btn-copy-title")?.addEventListener("click", () => {
+      const title = document.getElementById("studio-title")?.value || "";
+      copyTextToClipboard(title, "📋 Listing Title copied to clipboard!");
+    });
+
+    document.getElementById("btn-copy-desc")?.addEventListener("click", () => {
+      const desc = document.getElementById("studio-description")?.value || "";
+      copyTextToClipboard(desc, "📋 Description copied to clipboard!");
+    });
+
+    document.getElementById("btn-copy-packet")?.addEventListener("click", () => {
+      if (!currentStudioItem) return;
+      const it = currentStudioItem;
+      const title = document.getElementById("studio-title")?.value || it.name;
+      const cat = document.getElementById("studio-category")?.value || "Fragrances";
+      const cond = document.getElementById("studio-condition")?.value || it.condition;
+      const upc = document.getElementById("studio-upc")?.value || "N/A";
+      const price = (it.listedPrice !== null && it.listedPrice !== undefined) ? formatMoney(it.listedPrice) : "Unpriced";
+      const desc = document.getElementById("studio-description")?.value || "";
+
+      const packet = `=== MARKETPLACE LISTING PACKET (EBAY / MERCARI) ===
+
+TITLE:
+${title}
+
+CATEGORY:
+${cat}
+
+CONDITION:
+${cond}
+
+UPC / GTIN:
+${upc}
+
+LISTED PRICE:
+${price}
+
+DESCRIPTION:
+${desc}`;
+
+      copyTextToClipboard(packet, "📋 Complete Marketplace Packet copied to clipboard!");
+    });
+
+    document.getElementById("btn-save-studio")?.addEventListener("click", saveStudioListing);
+
+    // Studio Photo Uploader & Drop Zone handlers
+    const studioFileInput = document.getElementById("studio-file-input");
+    const studioDropZone = document.getElementById("studio-drop-zone");
+
+    studioFileInput?.addEventListener("change", async (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        await handleStudioPhotoUpload(e.target.files);
+      }
+    });
+
+    studioDropZone?.addEventListener("click", () => {
+      studioFileInput?.click();
+    });
+
+    ["dragenter", "dragover"].forEach((eventName) => {
+      studioDropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        studioDropZone.classList.add("border-indigo-400", "bg-slate-900");
+      });
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      studioDropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        studioDropZone.classList.remove("border-indigo-400", "bg-slate-900");
+      });
+    });
+
+    studioDropZone?.addEventListener("drop", async (e) => {
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        await handleStudioPhotoUpload(e.dataTransfer.files);
+      }
+    });
+
+    async function handleStudioPhotoUpload(files) {
+      if (!files || files.length === 0) return;
+      const remainingSlots = 8 - currentStudioPhotos.length;
+      if (remainingSlots <= 0) {
+        showToast("⚠️ Maximum 8 photos reached. Remove a photo to add more.");
+        return;
+      }
+      const filesToProcess = Array.from(files).slice(0, remainingSlots);
+      showToast(`Optimizing ${filesToProcess.length} photo(s) (1600x1600 @ 0.85)...`);
+
+      for (let i = 0; i < filesToProcess.length; i++) {
+        const file = filesToProcess[i];
+        try {
+          const { dataUrl } = await downsampleListingPhoto(file, 1600, 0.85);
+          const finalUrl = await uploadListingPhoto(dataUrl, currentStudioItem?.sku, currentStudioPhotos.length);
+          currentStudioPhotos.push(finalUrl);
+        } catch (e) {
+          console.error("Studio photo downsample error:", e);
+        }
+      }
+      renderStudioPhotoSlots();
+      showToast(`✅ Added ${filesToProcess.length} photo(s). Total: ${currentStudioPhotos.length} / 8`);
+      if (studioFileInput) studioFileInput.value = "";
+    }
 
     // Check active session on boot
     checkSession();
