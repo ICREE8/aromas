@@ -678,7 +678,20 @@
             <p id="studio-modal-subtitle" class="text-xs text-slate-400">8-Photo media engine, automated marketplace SEO title, and cross-posting copy for eBay & Mercari</p>
           </div>
         </div>
-        <button id="btn-close-studio" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">✕</button>
+        
+        <!-- Header Actions: Explicit Status Selector & Close -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5">
+            <label for="studio-status" class="text-[11px] font-semibold text-slate-400 hidden sm:inline">Status:</label>
+            <select id="studio-status" class="px-3 py-1.5 text-xs font-bold bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="Needs Listing">📝 Needs Listing</option>
+              <option value="In Stock">🟢 In Stock</option>
+              <option value="Needs Price">⚠️ Needs Price</option>
+              <option value="Sold">⚪ Sold</option>
+            </select>
+          </div>
+          <button id="btn-close-studio" type="button" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">✕</button>
+        </div>
       </div>
 
       <!-- Body: Dual Column -->
@@ -692,7 +705,13 @@
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-300">Media Engine</span>
                 <span class="text-[10px] text-slate-500 font-semibold">(Max 8 Photos)</span>
               </div>
-              <span id="studio-photo-count" class="text-xs font-mono font-bold text-indigo-400">0 / 8 Photos</span>
+              <div class="flex items-center gap-2">
+                <button type="button" id="btn-download-all-photos" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center gap-1 cursor-pointer">
+                  <span>📦</span>
+                  <span>Download All Photos</span>
+                </button>
+                <span id="studio-photo-count" class="text-xs font-mono font-bold text-indigo-400">0 / 8 Photos</span>
+              </div>
             </div>
 
             <!-- Drag & Drop / File Input Zone -->
@@ -736,10 +755,16 @@
               </div>
             </div>
 
-            <!-- UPC / GTIN Input -->
+            <!-- UPC / GTIN Input with Barcode Camera Scanner -->
             <div>
               <label class="block text-slate-400 font-semibold text-xs mb-1">UPC / GTIN Barcode</label>
-              <input id="studio-upc" type="text" placeholder="e.g. 3349668515660 or 085715165147" class="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+              <div class="flex items-center gap-2">
+                <input id="studio-upc" type="text" placeholder="e.g. 3349668515660 or 085715165147" class="flex-1 px-3.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                <button type="button" id="btn-scan-upc" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
+                  <span>📷</span>
+                  <span>Scan Barcode</span>
+                </button>
+              </div>
             </div>
 
             <!-- Listing Title Section with Auto-Generator -->
@@ -793,10 +818,47 @@
         <!-- Dialog Action Buttons -->
         <div class="flex items-center gap-2 justify-end">
           <button id="btn-cancel-studio" type="button" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold cursor-pointer">Cancel</button>
-          <button id="btn-save-studio" type="button" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
-            Save & Promote to In Stock
+          <button id="btn-studio-save" type="button" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all cursor-pointer">
+            💾 Save Studio Changes
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: Barcode Camera Viewfinder (Phase 4.4 UPC Scanner)  -->
+  <!-- ========================================================= -->
+  <input type="file" id="barcode-file-input" accept="image/*" capture="environment" class="hidden">
+  <div id="modal-barcode-scanner" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-indigo-500/40 w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-indigo-400 text-lg">📷</span>
+          <h4 class="text-sm font-bold text-white">UPC / Barcode Scanner</h4>
+        </div>
+        <button id="btn-close-barcode-scanner" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">✕</button>
+      </div>
+
+      <div class="relative rounded-xl overflow-hidden bg-black border border-slate-800 aspect-video flex items-center justify-center">
+        <video id="barcode-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
+        <!-- Scanner alignment frame & laser animation -->
+        <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6">
+          <div class="w-3/4 h-24 border-2 border-indigo-400/90 rounded-lg relative overflow-hidden shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+            <div class="w-full h-0.5 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)] animate-pulse absolute top-1/2 -translate-y-1/2"></div>
+          </div>
+        </div>
+      </div>
+
+      <p id="barcode-scanner-status" class="text-xs text-center text-slate-400 font-mono">Align UPC-A, EAN-13, or Code 128 within box</p>
+
+      <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800">
+        <button id="btn-barcode-fallback-upload" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
+          📁 Upload Photo Instead
+        </button>
+        <button id="btn-cancel-barcode-scan" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
+          Close
+        </button>
       </div>
     </div>
   </div>
@@ -1606,11 +1668,25 @@
         const nameDiv = document.createElement("div");
         nameDiv.className = `font-bold text-white ${isSold ? "line-through text-slate-400" : ""}`;
         nameDiv.textContent = it.name || "";
-        const brandDiv = document.createElement("div");
-        brandDiv.className = "text-[11px] text-slate-400 font-semibold";
-        brandDiv.textContent = it.brand || "";
+
+        const brandRow = document.createElement("div");
+        brandRow.className = "flex items-center gap-2 mt-0.5";
+        const brandSpan = document.createElement("span");
+        brandSpan.className = "text-[11px] text-slate-400 font-semibold";
+        brandSpan.textContent = it.brand || "";
+        brandRow.appendChild(brandSpan);
+
+        // Task 2: Team Visibility Indicator in Master Table (subtle asset pill if photos exist)
+        const imgList = (it.image_urls && it.image_urls.length > 0) ? it.image_urls : (it.photos && Array.isArray(it.photos) && it.photos.length > 0 ? it.photos : []);
+        if (imgList && imgList.length > 0) {
+          const photoPill = document.createElement("span");
+          photoPill.className = "inline-flex items-center gap-1 text-[10px] font-bold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20";
+          photoPill.textContent = `📷 ${imgList.length}`;
+          brandRow.appendChild(photoPill);
+        }
+
         tdName.appendChild(nameDiv);
-        tdName.appendChild(brandDiv);
+        tdName.appendChild(brandRow);
 
         // Concentration Type
         const tdType = document.createElement("td");
@@ -2666,6 +2742,108 @@
     // ==============================================================
     let currentStudioItem = null;
     let currentStudioPhotos = [];
+    let barcodeStream = null;
+    let barcodeScanTimer = null;
+
+    // Zero Resolution Loss: File naming helper
+    function getPhotoFilename(item, slotNumber) {
+      const sku = (item?.sku || "Item").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const brand = (item?.brand || "Brand").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const name = (item?.name || "Fragrance").replace(/[^a-zA-Z0-9_-]/g, "_");
+      return `${sku}_${slotNumber}_${brand}_${name}.jpg`;
+    }
+
+    // Zero Resolution Loss: Direct download helper
+    function triggerDownload(url, filename) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    async function downloadHighResPhoto(url, filename) {
+      try {
+        if (url.startsWith("data:")) {
+          triggerDownload(url, filename);
+          showToast(`⬇️ Downloaded ${filename}`);
+          return;
+        }
+        const resp = await fetch(url);
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        triggerDownload(blobUrl, filename);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        showToast(`⬇️ Downloaded ${filename}`);
+      } catch (e) {
+        triggerDownload(url, filename);
+        showToast(`⬇️ Downloading ${filename}`);
+      }
+    }
+
+    // Global Batch Action: Download all uploaded photos in full resolution
+    async function downloadAllStudioPhotos() {
+      if (!currentStudioPhotos || currentStudioPhotos.length === 0) {
+        showToast("No photos uploaded to download.");
+        return;
+      }
+      showToast(`📦 Downloading all ${currentStudioPhotos.length} full-res photo(s)...`);
+      for (let i = 0; i < currentStudioPhotos.length; i++) {
+        const filename = getPhotoFilename(currentStudioItem, i + 1);
+        await downloadHighResPhoto(currentStudioPhotos[i], filename);
+        await new Promise((r) => setTimeout(r, 450));
+      }
+      showToast(`✅ Successfully downloaded all ${currentStudioPhotos.length} photos!`);
+    }
+
+    // Per-Photo Quick Action: Copy to clipboard (PNG blob where supported or URL/data)
+    async function copyPhotoToClipboard(url) {
+      try {
+        let blob;
+        if (url.startsWith("data:")) {
+          const res = await fetch(url);
+          blob = await res.blob();
+        } else {
+          const res = await fetch(url);
+          blob = await res.blob();
+        }
+
+        // Ensure PNG format for ClipboardItem support
+        if (blob.type !== "image/png") {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = url;
+          });
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+        }
+
+        if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+          const item = new ClipboardItem({ "image/png": blob });
+          await navigator.clipboard.write([item]);
+          showToast("📋 Image copied to clipboard as PNG!");
+          return;
+        }
+      } catch (e) {
+        console.warn("ClipboardItem image copy notice (falling back to URL):", e);
+      }
+
+      // Fallback: Copy URL or base64 data string
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+        showToast("📋 High-res image data copied to clipboard!");
+      } else {
+        copyTextToClipboard(url, "📋 Image data copied to clipboard!");
+      }
+    }
 
     // Client-side canvas downsampling (max 1600x1600 @ 0.85 JPEG)
     function downsampleListingPhoto(file, maxDimension = 1600, quality = 0.85) {
@@ -2725,7 +2903,7 @@
       return dataUrl;
     }
 
-    // Render 8-photo slot cards
+    // Render 8-photo slot cards with action overlay (📋 Copy, ⬇️ Download, ✕ Remove)
     function renderStudioPhotoSlots() {
       const container = document.getElementById("studio-photo-grid");
       if (!container) return;
@@ -2753,28 +2931,59 @@
           // Cover Photo badge for slot 1
           if (i === 0) {
             const badge = document.createElement("span");
-            badge.className = "absolute top-1.5 left-1.5 text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 shadow";
+            badge.className = "absolute top-1.5 left-1.5 text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 shadow z-10";
             badge.textContent = "⭐ Cover";
             slotCard.appendChild(badge);
           }
 
           // Slot index number
           const numSpan = document.createElement("span");
-          numSpan.className = "absolute bottom-1 right-1.5 text-[9px] font-mono font-bold text-slate-300 bg-slate-950/70 px-1 py-0.5 rounded";
+          numSpan.className = "absolute bottom-1 right-1.5 text-[9px] font-mono font-bold text-slate-300 bg-slate-950/70 px-1 py-0.5 rounded z-10";
           numSpan.textContent = `#${i + 1}`;
           slotCard.appendChild(numSpan);
+
+          // Quick actions overlay: 📋 Copy, ⬇️ Download, ✕ Remove
+          const actionsOverlay = document.createElement("div");
+          actionsOverlay.className = "absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 z-20";
+
+          // Copy button
+          const cpBtn = document.createElement("button");
+          cpBtn.type = "button";
+          cpBtn.className = "w-7 h-7 rounded-lg bg-slate-800/90 hover:bg-indigo-600 text-white flex items-center justify-center text-xs transition-colors cursor-pointer shadow border border-slate-700";
+          cpBtn.title = "Copy image to clipboard";
+          cpBtn.textContent = "📋";
+          cpBtn.onclick = (e) => {
+            e.stopPropagation();
+            copyPhotoToClipboard(photoUrl);
+          };
+
+          // Download button
+          const dlBtn = document.createElement("button");
+          dlBtn.type = "button";
+          dlBtn.className = "w-7 h-7 rounded-lg bg-slate-800/90 hover:bg-emerald-600 text-white flex items-center justify-center text-xs transition-colors cursor-pointer shadow border border-slate-700";
+          dlBtn.title = "Download full-resolution photo";
+          dlBtn.textContent = "⬇️";
+          dlBtn.onclick = (e) => {
+            e.stopPropagation();
+            const filename = getPhotoFilename(currentStudioItem, i + 1);
+            downloadHighResPhoto(photoUrl, filename);
+          };
 
           // Remove button
           const rmBtn = document.createElement("button");
           rmBtn.type = "button";
-          rmBtn.className = "absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900/90 text-slate-300 hover:text-white hover:bg-rose-600 flex items-center justify-center text-xs transition-colors cursor-pointer shadow";
-          rmBtn.textContent = "✕";
+          rmBtn.className = "w-7 h-7 rounded-lg bg-slate-800/90 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-colors cursor-pointer shadow border border-slate-700";
           rmBtn.title = "Remove photo";
+          rmBtn.textContent = "✕";
           rmBtn.onclick = (e) => {
             e.stopPropagation();
             removeStudioPhoto(i);
           };
-          slotCard.appendChild(rmBtn);
+
+          actionsOverlay.appendChild(cpBtn);
+          actionsOverlay.appendChild(dlBtn);
+          actionsOverlay.appendChild(rmBtn);
+          slotCard.appendChild(actionsOverlay);
         } else {
           // Empty slot
           slotCard.className = "relative aspect-square rounded-xl border-2 border-dashed border-slate-700/80 hover:border-indigo-500/60 bg-slate-900/40 hover:bg-slate-900/70 flex flex-col items-center justify-center text-slate-500 hover:text-indigo-400 transition-all cursor-pointer group";
@@ -2823,6 +3032,12 @@
       // Header details
       document.getElementById("studio-item-badge").textContent = it.sku || "Item";
       document.getElementById("studio-modal-subtitle").textContent = `"${it.name}" by ${it.brand} • ${it.concentration || "EDP"} • ${it.size || "Standard"} • ${it.listedPrice ? formatMoney(it.listedPrice) : "Unpriced"}`;
+
+      // 1. Pre-select CURRENT status in #studio-status (Zero forced changes)
+      const studioStatusSelect = document.getElementById("studio-status");
+      if (studioStatusSelect) {
+        studioStatusSelect.value = it.status || "Needs Listing";
+      }
 
       // Populate Category
       const catSelect = document.getElementById("studio-category");
@@ -3010,7 +3225,7 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
       document.body.removeChild(ta);
     }
 
-    // Save Studio Listing (Phase 4.4)
+    // Save Studio Listing (Unified Save with Zero Forced Status Changes)
     async function saveStudioListing() {
       if (!currentStudioItem) return;
       const it = currentStudioItem;
@@ -3020,13 +3235,11 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
       const condition = document.getElementById("studio-condition")?.value || it.condition;
       const upc = document.getElementById("studio-upc")?.value.trim() || "";
 
-      // When saved with listing data, if status was "Needs Listing", automatically promote to "In Stock"
-      let newStatus = it.status;
-      if (newStatus === "Needs Listing") {
-        newStatus = "In Stock";
-      }
+      // Explicitly respect whatever status is currently selected in #studio-status (Zero forced changes)
+      const selectedStatus = document.getElementById("studio-status")?.value || it.status || "Needs Listing";
 
       // Update local item
+      it.status = selectedStatus;
       it.listing_title = title;
       it.listingTitle = title;
       it.listing_description = desc;
@@ -3038,10 +3251,9 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
       it.upcGtin = upc;
       it.photos = [...currentStudioPhotos];
       it.image_urls = [...currentStudioPhotos];
-      it.status = newStatus;
       if (condition) it.condition = condition;
 
-      const saveBtn = document.getElementById("btn-save-studio");
+      const saveBtn = document.getElementById("btn-studio-save") || document.getElementById("btn-save-studio");
       if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.textContent = "Saving...";
@@ -3056,7 +3268,7 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
             upc_gtin: upc,
             photos: currentStudioPhotos,
             image_urls: currentStudioPhotos,
-            status: newStatus,
+            status: selectedStatus,
             condition: it.condition,
             updated_at: new Date().toISOString()
           };
@@ -3071,12 +3283,122 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
 
       if (saveBtn) {
         saveBtn.disabled = false;
-        saveBtn.textContent = "Save & Promote to In Stock";
+        saveBtn.textContent = "💾 Save Studio Changes";
       }
 
       document.getElementById("modal-listing-studio").classList.add("hidden");
       renderDashboard();
-      showToast(`✅ Saved listing for "${it.name}"! Status: ${newStatus.toUpperCase()}`);
+      showToast(`✅ Saved studio changes for "${it.name}"! Status: ${selectedStatus.toUpperCase()}`);
+    }
+
+    // Interactive UPC / Barcode Camera Scanner Engine
+    async function startBarcodeScanner() {
+      const modal = document.getElementById("modal-barcode-scanner");
+      const video = document.getElementById("barcode-video");
+      const statusText = document.getElementById("barcode-scanner-status");
+
+      modal?.classList.remove("hidden");
+      if (statusText) statusText.textContent = "Requesting camera access...";
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        if (statusText) statusText.textContent = "Camera API not supported in this browser. Upload a photo.";
+        showToast("Camera not supported on this browser. Upload a barcode photo.");
+        document.getElementById("barcode-file-input")?.click();
+        return;
+      }
+
+      try {
+        barcodeStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        if (video) {
+          video.srcObject = barcodeStream;
+          await video.play();
+        }
+        if (statusText) statusText.textContent = "Align barcode inside the target box...";
+
+        if ("BarcodeDetector" in window) {
+          try {
+            const supported = await window.BarcodeDetector.getSupportedFormats();
+            const targetFormats = ["upc_a", "ean_13", "code_128", "upc_e", "ean_8", "code_39"].filter(f => supported.includes(f));
+            const detector = new window.BarcodeDetector({ formats: targetFormats.length > 0 ? targetFormats : supported });
+
+            barcodeScanTimer = setInterval(async () => {
+              if (!video || video.readyState < 2) return;
+              try {
+                const barcodes = await detector.detect(video);
+                if (barcodes && barcodes.length > 0) {
+                  const val = barcodes[0].rawValue;
+                  stopBarcodeScanner();
+                  const upcInput = document.getElementById("studio-upc");
+                  if (upcInput) upcInput.value = val;
+                  showToast(`✅ Barcode detected: ${val}`);
+                }
+              } catch (err) {
+                // scanning loop non-fatal
+              }
+            }, 250);
+          } catch (e) {
+            console.warn("BarcodeDetector setup note:", e);
+          }
+        } else {
+          if (statusText) statusText.textContent = "Native BarcodeDetector unavailable. Use photo upload or manual entry.";
+        }
+      } catch (err) {
+        console.warn("Camera error:", err);
+        if (statusText) statusText.textContent = "Camera access denied or unavailable.";
+        showToast("Camera unavailable. You can upload a photo of the barcode instead.");
+      }
+    }
+
+    function stopBarcodeScanner() {
+      if (barcodeStream) {
+        barcodeStream.getTracks().forEach((track) => track.stop());
+        barcodeStream = null;
+      }
+      if (barcodeScanTimer) {
+        clearInterval(barcodeScanTimer);
+        barcodeScanTimer = null;
+      }
+      const video = document.getElementById("barcode-video");
+      if (video) video.srcObject = null;
+      document.getElementById("modal-barcode-scanner")?.classList.add("hidden");
+    }
+
+    async function handleBarcodePhotoFile(file) {
+      if (!file) return;
+      showToast("Inspecting photo for barcode...");
+      if ("BarcodeDetector" in window) {
+        try {
+          const img = new Image();
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            img.onload = async () => {
+              try {
+                const supported = await window.BarcodeDetector.getSupportedFormats();
+                const detector = new window.BarcodeDetector({ formats: supported });
+                const codes = await detector.detect(img);
+                if (codes && codes.length > 0) {
+                  const val = codes[0].rawValue;
+                  document.getElementById("studio-upc").value = val;
+                  stopBarcodeScanner();
+                  showToast(`✅ Barcode detected: ${val}`);
+                } else {
+                  showToast("⚠️ No barcode detected in photo. Please enter manually.");
+                }
+              } catch (err) {
+                showToast("Barcode scan error. Please enter manually.");
+              }
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+          return;
+        } catch (e) {
+          console.warn("BarcodeDetector photo error:", e);
+        }
+      }
+      showToast("BarcodeDetector API not supported in this browser. Please enter UPC manually.");
     }
 
     // Studio Event Listeners
@@ -3134,7 +3456,27 @@ ${desc}`;
       copyTextToClipboard(packet, "📋 Complete Marketplace Packet copied to clipboard!");
     });
 
+    // Unified Save Button
+    document.getElementById("btn-studio-save")?.addEventListener("click", saveStudioListing);
     document.getElementById("btn-save-studio")?.addEventListener("click", saveStudioListing);
+
+    // Batch Download All Photos
+    document.getElementById("btn-download-all-photos")?.addEventListener("click", downloadAllStudioPhotos);
+
+    // Barcode Scanner Listeners
+    document.getElementById("btn-scan-upc")?.addEventListener("click", startBarcodeScanner);
+    document.getElementById("btn-close-barcode-scanner")?.addEventListener("click", stopBarcodeScanner);
+    document.getElementById("btn-cancel-barcode-scan")?.addEventListener("click", stopBarcodeScanner);
+
+    document.getElementById("btn-barcode-fallback-upload")?.addEventListener("click", () => {
+      document.getElementById("barcode-file-input")?.click();
+    });
+
+    document.getElementById("barcode-file-input")?.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleBarcodePhotoFile(e.target.files[0]);
+      }
+    });
 
     // Studio Photo Uploader & Drop Zone handlers
     const studioFileInput = document.getElementById("studio-file-input");
