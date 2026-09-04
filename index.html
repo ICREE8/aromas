@@ -827,9 +827,9 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- MODAL: Barcode Camera Viewfinder (Phase 4.4 UPC Scanner)  -->
+  <!-- MODAL: Barcode Scanner (Responsive Dual-Mode)             -->
   <!-- ========================================================= -->
-  <input type="file" id="barcode-file-input" accept="image/*" capture="environment" class="hidden">
+  <input type="file" id="barcode-file-input" accept="image/*" class="hidden">
   <div id="modal-barcode-scanner" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#111827] border border-indigo-500/40 w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -840,22 +840,50 @@
         <button id="btn-close-barcode-scanner" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">✕</button>
       </div>
 
-      <div class="relative rounded-xl overflow-hidden bg-black border border-slate-800 aspect-video flex items-center justify-center">
-        <video id="barcode-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
-        <!-- Scanner alignment frame & laser animation -->
-        <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6">
-          <div class="w-3/4 h-24 border-2 border-indigo-400/90 rounded-lg relative overflow-hidden shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-            <div class="w-full h-0.5 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)] animate-pulse absolute top-1/2 -translate-y-1/2"></div>
+      <!-- DESKTOP MODE: Drag & Drop Zone -->
+      <div id="barcode-desktop-view" class="space-y-3">
+        <div id="barcode-drop-zone" class="border-2 border-dashed border-slate-700 hover:border-indigo-500/80 rounded-xl p-6 bg-slate-900/60 hover:bg-slate-900 transition-all flex flex-col items-center justify-center text-center cursor-pointer group">
+          <div class="w-12 h-12 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform mb-3">
+            📁
           </div>
+          <p class="text-sm font-semibold text-slate-200 group-hover:text-indigo-300 transition-colors">
+            Drop Barcode Photo Here, or Click to Browse
+          </p>
+          <p class="text-[11px] text-slate-500 mt-1">Supports UPC-A, EAN-13, Code 128, UPC-E</p>
+        </div>
+
+        <div class="text-center">
+          <button id="btn-toggle-webcam" type="button" class="text-xs text-slate-400 hover:text-white underline cursor-pointer mt-3">Use Webcam Instead</button>
+        </div>
+
+        <p id="barcode-desktop-error" class="hidden text-xs text-amber-400 text-center font-medium bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5">Could not read barcode clearly. Please type it in manually or try another picture.</p>
+      </div>
+
+      <!-- CAMERA MODE: Mobile Rear Camera or Desktop Webcam Stream -->
+      <div id="barcode-camera-view" class="hidden space-y-3">
+        <div class="relative rounded-xl overflow-hidden bg-black border border-slate-800 aspect-video flex items-center justify-center">
+          <video id="barcode-video" class="w-full h-full object-cover" playsinline autoplay muted></video>
+          <!-- Scanner alignment frame & laser animation -->
+          <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-6">
+            <div class="w-3/4 h-24 border-2 border-indigo-400/90 rounded-lg relative overflow-hidden shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+              <div class="w-full h-0.5 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,1)] animate-pulse absolute top-1/2 -translate-y-1/2"></div>
+            </div>
+          </div>
+        </div>
+
+        <p id="barcode-scanner-status" class="text-xs text-center text-slate-400 font-mono">Align UPC-A, EAN-13, or Code 128 within box</p>
+
+        <div class="flex flex-col items-center gap-1.5 pt-1">
+          <button id="btn-barcode-mobile-upload" type="button" class="text-xs text-indigo-400 hover:text-indigo-300 underline cursor-pointer">
+            Or upload photo from library
+          </button>
+          <button id="btn-toggle-dropzone" type="button" class="text-xs text-slate-400 hover:text-white underline cursor-pointer">
+            Switch back to photo drop
+          </button>
         </div>
       </div>
 
-      <p id="barcode-scanner-status" class="text-xs text-center text-slate-400 font-mono">Align UPC-A, EAN-13, or Code 128 within box</p>
-
-      <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800">
-        <button id="btn-barcode-fallback-upload" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
-          📁 Upload Photo Instead
-        </button>
+      <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-800">
         <button id="btn-cancel-barcode-scan" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer">
           Close
         </button>
@@ -3291,25 +3319,72 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
       showToast(`✅ Saved studio changes for "${it.name}"! Status: ${selectedStatus.toUpperCase()}`);
     }
 
-    // Interactive UPC / Barcode Camera Scanner Engine
+    // =========================================================
+    // Responsive Dual-Mode Barcode Engine (Mobile vs Desktop)
+    // =========================================================
+    function isMobileClient() {
+      return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || 
+             ('ontouchstart' in window && navigator.maxTouchPoints > 0);
+    }
+
+    function flashUpcInputSuccess(val) {
+      const upcInput = document.getElementById("studio-upc");
+      if (!upcInput) return;
+      upcInput.value = val;
+      upcInput.focus();
+      upcInput.classList.remove("border-slate-700", "focus:border-indigo-500");
+      upcInput.classList.add("border-emerald-500", "ring-2", "ring-emerald-500/50");
+      setTimeout(() => {
+        upcInput.classList.remove("border-emerald-500", "ring-2", "ring-emerald-500/50");
+        upcInput.classList.add("border-slate-700", "focus:border-indigo-500");
+      }, 2500);
+    }
+
     async function startBarcodeScanner() {
       const modal = document.getElementById("modal-barcode-scanner");
+      const desktopView = document.getElementById("barcode-desktop-view");
+      const cameraView = document.getElementById("barcode-camera-view");
+      const errorEl = document.getElementById("barcode-desktop-error");
+
+      if (errorEl) errorEl.classList.add("hidden");
+      modal?.classList.remove("hidden");
+
+      const isMobile = isMobileClient();
+
+      if (isMobile) {
+        // Mobile workflow: prioritize live camera viewfinder with rear facingMode
+        desktopView?.classList.add("hidden");
+        cameraView?.classList.remove("hidden");
+        await startLiveCamera({ ideal: "environment" });
+      } else {
+        // Desktop workflow: do NOT auto-start webcam, present clean high-contrast dropzone
+        stopLiveCameraStream();
+        cameraView?.classList.add("hidden");
+        desktopView?.classList.remove("hidden");
+      }
+    }
+
+    async function startLiveCamera(facingConstraint = { ideal: "environment" }) {
       const video = document.getElementById("barcode-video");
       const statusText = document.getElementById("barcode-scanner-status");
+      const cameraView = document.getElementById("barcode-camera-view");
+      const desktopView = document.getElementById("barcode-desktop-view");
 
-      modal?.classList.remove("hidden");
+      desktopView?.classList.add("hidden");
+      cameraView?.classList.remove("hidden");
+
       if (statusText) statusText.textContent = "Requesting camera access...";
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         if (statusText) statusText.textContent = "Camera API not supported in this browser. Upload a photo.";
         showToast("Camera not supported on this browser. Upload a barcode photo.");
-        document.getElementById("barcode-file-input")?.click();
         return;
       }
 
       try {
+        stopLiveCameraStream();
         barcodeStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+          video: { facingMode: facingConstraint, width: { ideal: 1280 }, height: { ideal: 720 } }
         });
         if (video) {
           video.srcObject = barcodeStream;
@@ -3320,7 +3395,7 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
         if ("BarcodeDetector" in window) {
           try {
             const supported = await window.BarcodeDetector.getSupportedFormats();
-            const targetFormats = ["upc_a", "ean_13", "code_128", "upc_e", "ean_8", "code_39"].filter(f => supported.includes(f));
+            const targetFormats = ["upc_a", "upc_e", "ean_13", "code_128"].filter(f => supported.includes(f));
             const detector = new window.BarcodeDetector({ formats: targetFormats.length > 0 ? targetFormats : supported });
 
             barcodeScanTimer = setInterval(async () => {
@@ -3330,12 +3405,11 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
                 if (barcodes && barcodes.length > 0) {
                   const val = barcodes[0].rawValue;
                   stopBarcodeScanner();
-                  const upcInput = document.getElementById("studio-upc");
-                  if (upcInput) upcInput.value = val;
-                  showToast(`✅ Barcode detected: ${val}`);
+                  flashUpcInputSuccess(val);
+                  showToast(`Barcode decoded: ${val}`);
                 }
               } catch (err) {
-                // scanning loop non-fatal
+                // non-fatal scanning tick
               }
             }, 250);
           } catch (e) {
@@ -3346,12 +3420,12 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
         }
       } catch (err) {
         console.warn("Camera error:", err);
-        if (statusText) statusText.textContent = "Camera access denied or unavailable.";
+        if (statusText) statusText.textContent = "Camera access denied or unavailable. Please upload photo or type manually.";
         showToast("Camera unavailable. You can upload a photo of the barcode instead.");
       }
     }
 
-    function stopBarcodeScanner() {
+    function stopLiveCameraStream() {
       if (barcodeStream) {
         barcodeStream.getTracks().forEach((track) => track.stop());
         barcodeStream = null;
@@ -3362,43 +3436,98 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
       }
       const video = document.getElementById("barcode-video");
       if (video) video.srcObject = null;
+    }
+
+    function stopBarcodeScanner() {
+      stopLiveCameraStream();
       document.getElementById("modal-barcode-scanner")?.classList.add("hidden");
+      const errorEl = document.getElementById("barcode-desktop-error");
+      if (errorEl) errorEl.classList.add("hidden");
+      const upcInput = document.getElementById("studio-upc");
+      if (upcInput) upcInput.focus();
     }
 
     async function handleBarcodePhotoFile(file) {
       if (!file) return;
+      const errorEl = document.getElementById("barcode-desktop-error");
+      if (errorEl) errorEl.classList.add("hidden");
+
+      if (!("BarcodeDetector" in window)) {
+        if (errorEl) {
+          errorEl.textContent = "Barcode detection is not supported in this browser. Please type it in manually or try another picture.";
+          errorEl.classList.remove("hidden");
+        }
+        showToast("Barcode detection not supported in this browser. Please type UPC manually.");
+        return;
+      }
+
       showToast("Inspecting photo for barcode...");
-      if ("BarcodeDetector" in window) {
-        try {
-          const img = new Image();
-          const reader = new FileReader();
-          reader.onload = async (e) => {
-            img.onload = async () => {
-              try {
-                const supported = await window.BarcodeDetector.getSupportedFormats();
-                const detector = new window.BarcodeDetector({ formats: supported });
-                const codes = await detector.detect(img);
-                if (codes && codes.length > 0) {
-                  const val = codes[0].rawValue;
-                  document.getElementById("studio-upc").value = val;
-                  stopBarcodeScanner();
-                  showToast(`✅ Barcode detected: ${val}`);
-                } else {
-                  showToast("⚠️ No barcode detected in photo. Please enter manually.");
-                }
-              } catch (err) {
-                showToast("Barcode scan error. Please enter manually.");
+
+      try {
+        const supported = await window.BarcodeDetector.getSupportedFormats();
+        const targetFormats = ['upc_a', 'upc_e', 'ean_13', 'code_128'].filter(f => supported.includes(f));
+        const detector = new window.BarcodeDetector({ formats: targetFormats.length > 0 ? targetFormats : supported });
+
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        img.onload = async () => {
+          try {
+            // Draw image onto offscreen canvas for reliable decoding
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth || img.width;
+            canvas.height = img.naturalHeight || img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+
+            let barcodes = [];
+            try {
+              barcodes = await detector.detect(canvas);
+            } catch (canvasErr) {
+              barcodes = await detector.detect(img);
+            }
+
+            URL.revokeObjectURL(objectUrl);
+
+            if (barcodes && barcodes.length > 0) {
+              const val = barcodes[0].rawValue;
+              stopBarcodeScanner();
+              flashUpcInputSuccess(val);
+              showToast(`Barcode decoded: ${val}`);
+            } else {
+              if (errorEl) {
+                errorEl.textContent = "Could not read barcode clearly. Please type it in manually or try another picture.";
+                errorEl.classList.remove("hidden");
               }
-            };
-            img.src = e.target.result;
-          };
-          reader.readAsDataURL(file);
-          return;
-        } catch (e) {
-          console.warn("BarcodeDetector photo error:", e);
+              showToast("⚠️ Could not read barcode clearly. Please type it in manually or try another picture.");
+            }
+          } catch (err) {
+            URL.revokeObjectURL(objectUrl);
+            console.warn("Decode error:", err);
+            if (errorEl) {
+              errorEl.textContent = "Could not read barcode clearly. Please type it in manually or try another picture.";
+              errorEl.classList.remove("hidden");
+            }
+            showToast("⚠️ Could not read barcode clearly. Please type it in manually or try another picture.");
+          }
+        };
+
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          if (errorEl) {
+            errorEl.textContent = "Could not load image. Please select a valid photo.";
+            errorEl.classList.remove("hidden");
+          }
+        };
+
+        img.src = objectUrl;
+      } catch (e) {
+        console.warn("BarcodeDetector setup error:", e);
+        if (errorEl) {
+          errorEl.textContent = "Could not read barcode clearly. Please type it in manually or try another picture.";
+          errorEl.classList.remove("hidden");
         }
       }
-      showToast("BarcodeDetector API not supported in this browser. Please enter UPC manually.");
     }
 
     // Studio Event Listeners
@@ -3463,18 +3592,61 @@ ${desc}`;
     // Batch Download All Photos
     document.getElementById("btn-download-all-photos")?.addEventListener("click", downloadAllStudioPhotos);
 
-    // Barcode Scanner Listeners
+    // Barcode Scanner Listeners (Dual Mode)
     document.getElementById("btn-scan-upc")?.addEventListener("click", startBarcodeScanner);
     document.getElementById("btn-close-barcode-scanner")?.addEventListener("click", stopBarcodeScanner);
     document.getElementById("btn-cancel-barcode-scan")?.addEventListener("click", stopBarcodeScanner);
 
-    document.getElementById("btn-barcode-fallback-upload")?.addEventListener("click", () => {
+    // Desktop Toggle to Webcam
+    document.getElementById("btn-toggle-webcam")?.addEventListener("click", () => {
+      startLiveCamera({ ideal: "user" });
+    });
+
+    // Switch back from Camera to Desktop Dropzone
+    document.getElementById("btn-toggle-dropzone")?.addEventListener("click", () => {
+      stopLiveCameraStream();
+      document.getElementById("barcode-camera-view")?.classList.add("hidden");
+      document.getElementById("barcode-desktop-view")?.classList.remove("hidden");
+    });
+
+    // Mobile / File Browse trigger
+    document.getElementById("btn-barcode-mobile-upload")?.addEventListener("click", () => {
       document.getElementById("barcode-file-input")?.click();
     });
 
-    document.getElementById("barcode-file-input")?.addEventListener("change", (e) => {
+    const barcodeFileInput = document.getElementById("barcode-file-input");
+    barcodeFileInput?.addEventListener("change", (e) => {
       if (e.target.files && e.target.files.length > 0) {
         handleBarcodePhotoFile(e.target.files[0]);
+        e.target.value = "";
+      }
+    });
+
+    // Desktop Dropzone Event Handlers
+    const barcodeDropZone = document.getElementById("barcode-drop-zone");
+    barcodeDropZone?.addEventListener("click", () => {
+      barcodeFileInput?.click();
+    });
+
+    ["dragenter", "dragover"].forEach((eventName) => {
+      barcodeDropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        barcodeDropZone.classList.add("border-indigo-400", "bg-slate-800/80");
+      });
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      barcodeDropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        barcodeDropZone.classList.remove("border-indigo-400", "bg-slate-800/80");
+      });
+    });
+
+    barcodeDropZone?.addEventListener("drop", (e) => {
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        handleBarcodePhotoFile(e.dataTransfer.files[0]);
       }
     });
 
