@@ -353,7 +353,7 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="border-b border-slate-800 bg-[#0d1424] text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-              <th class="py-3.5 px-4 w-32">Physical SKU</th>
+              <th class="py-3.5 px-4 w-28 font-mono">Item #</th>
               <th class="py-3.5 px-4">Fragrance & Brand</th>
               <th class="py-3.5 px-4 w-28">Type</th>
               <th class="py-3.5 px-4 w-28">Size</th>
@@ -407,8 +407,8 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-slate-400 font-semibold mb-1">Physical SKU / Batch Code</label>
-            <input id="bottle-sku" placeholder="e.g. 38U600" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono focus:outline-none focus:border-emerald-500">
+            <label class="block text-slate-400 font-semibold mb-1">Item #</label>
+            <input id="bottle-sku" readonly placeholder="e.g. Item-1" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-400 font-mono focus:outline-none focus:border-emerald-500 cursor-not-allowed">
           </div>
           <div>
             <label class="block text-slate-400 font-semibold mb-1">Fragrance Name</label>
@@ -682,6 +682,34 @@
         toast.style.opacity = "0";
         setTimeout(() => toast.remove(), 300);
       }, 3200);
+    }
+
+    function getNextItemSequence(list) {
+      if (!list || list.length === 0) return 1;
+      let maxNum = 0;
+      list.forEach((it) => {
+        if (it.sku) {
+          const match = String(it.sku).match(/\d+/g);
+          if (match) {
+            const num = parseInt(match[match.length - 1], 10);
+            if (!isNaN(num) && num > maxNum) {
+              maxNum = num;
+            }
+          }
+        }
+      });
+      return maxNum + 1;
+    }
+
+    function findDuplicateFragrance(incoming, list) {
+      const clean = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      return list.find((it) => {
+        const matchBrand = clean(it.brand) === clean(incoming.brand);
+        const matchName = clean(it.name) === clean(incoming.name);
+        const matchConc = clean(it.concentration) === clean(incoming.concentration);
+        const matchSize = clean(it.size) === clean(incoming.size);
+        return matchBrand && matchName && matchConc && matchSize;
+      });
     }
 
     // Direct toggle handlers
@@ -1384,32 +1412,34 @@
       document.getElementById("modal-bottle").classList.remove("hidden");
     }
 
-    // Google Sheets paste importer
+    // Google Sheets / Excel paste importer
     document.getElementById("btn-submit-import").addEventListener("click", async () => {
       const text = document.getElementById("import-textarea").value.trim();
       if (!text) return;
 
       const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
-      const rowsToInsert = [];
+      let nextInt = getNextItemSequence(items);
+      let mergedCount = 0;
+      let newCount = 0;
 
-      lines.forEach((line, idx) => {
+      for (let idx = 0; idx < lines.length; idx++) {
+        const line = lines[idx];
         const delimiter = line.includes("\t") ? "\t" : ",";
         const cols = line.split(delimiter).map((c) => c.replace(/^["']|["']$/g, "").trim());
 
         if (
           idx === 0 &&
-          (cols[0].toLowerCase().includes("sku") || cols[1]?.toLowerCase().includes("name") || cols[0]?.toLowerCase().includes("fragrance"))
+          (cols[0].toLowerCase().includes("sku") || cols[1]?.toLowerCase().includes("name") || cols[0]?.toLowerCase().includes("fragrance") || cols[0]?.toLowerCase().includes("item"))
         ) {
-          return;
+          continue;
         }
 
         if (cols.length >= 2) {
-          const sku = cols[0] || `ARM-${Date.now()}-${idx}`;
           const name = cols[1] || cols[0];
           const brand = cols[2] || "Designer House";
           const concentration = cols[3] || "EDP";
-          const size = cols[4] || "3.4oz 100ml";
-          const condition = cols[5] || "New Sealed";
+          const size = cols[4] || "3.4 oz / 100 ml (Standard Full Size)";
+          const condition = cols[5] || "Brand New / Factory Sealed";
           const qty = parseInt(cols[6] || "1", 10) || 1;
           
           const rawListed = (cols[7] || "").replace(/[^0-9.]/g, "");
@@ -1418,46 +1448,85 @@
           const rawMsrp = (cols[8] || "").replace(/[^0-9.]/g, "");
           const msrp = rawMsrp ? parseFloat(rawMsrp) : null;
           
-          const status = (cols[9] && cols[9].toLowerCase().includes("sold")) ? "Sold" : (listed !== null ? "In Stock" : "Needs Price");
           const warehouse = cols[10] || "Location A: 1";
 
-          rowsToInsert.push({
-            id: `ARM-${Date.now()}-${idx}`,
-            sku,
-            name,
-            brand,
-            concentration,
-            size,
-            condition,
-            qty,
-            listed_price: listed,
-            retail_msrp: msrp,
-            status,
-            warehouse,
-            updated_at: new Date().toISOString()
-          });
-        }
-      });
+          const incoming = { name, brand, concentration, size };
+          const existing = findDuplicateFragrance(incoming, items);
 
-      if (rowsToInsert.length > 0) {
-        if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
-          try {
-            await window.sbClient.from("inventory").upsert(rowsToInsert);
-          } catch (e) {
-            console.warn("Cloud upsert notice:", e);
+          if (existing) {
+            mergedCount++;
+            const newQty = (Number(existing.qty) || 0) + qty;
+            const newStatus = existing.status === "Sold" ? (existing.listedPrice ? "In Stock" : "Needs Price") : existing.status;
+            
+            if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+              try {
+                await window.sbClient.from("inventory").update({
+                  qty: newQty,
+                  status: newStatus,
+                  updated_at: new Date().toISOString()
+                }).eq("id", existing.id);
+              } catch (e) {
+                console.warn("Cloud paste update notice:", e);
+              }
+            }
+            existing.qty = newQty;
+            existing.status = newStatus;
+          } else {
+            newCount++;
+            const assignedSku = "Item-" + nextInt;
+            nextInt++;
+
+            const status = (cols[9] && cols[9].toLowerCase().includes("sold")) ? "Sold" : (listed !== null ? "In Stock" : "Needs Price");
+
+            const newRow = {
+              id: `ARM-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+              sku: assignedSku,
+              name,
+              brand,
+              concentration,
+              size,
+              condition,
+              qty,
+              listed_price: listed,
+              retail_msrp: msrp,
+              status,
+              warehouse,
+              updated_at: new Date().toISOString()
+            };
+
+            if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+              try {
+                await window.sbClient.from("inventory").insert([newRow]);
+              } catch (e) {
+                console.warn("Cloud paste insert notice:", e);
+              }
+            }
+
+            items.unshift({
+              id: newRow.id,
+              sku: newRow.sku,
+              name: newRow.name,
+              brand: newRow.brand,
+              concentration: newRow.concentration,
+              size: newRow.size,
+              condition: newRow.condition,
+              qty: newRow.qty,
+              listedPrice: listed,
+              retailMSRP: msrp,
+              status: status,
+              warehouse: newRow.warehouse
+            });
           }
         }
-        document.getElementById("modal-import").classList.add("hidden");
-        document.getElementById("import-textarea").value = "";
-        showToast(`✨ Saved ${rowsToInsert.length} bottles to inventory!`);
-        if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
-          fetchInventory();
-        } else {
-          items = [...rowsToInsert, ...items];
-          renderDashboard();
-        }
+      }
+
+      document.getElementById("modal-import").classList.add("hidden");
+      document.getElementById("import-textarea").value = "";
+      showToast(`✨ Import complete (${mergedCount} merged into existing items, ${newCount} new items created)!`);
+      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+        fetchInventory();
       } else {
-        showToast("Could not parse rows. Ensure tab or comma separated format.");
+        renderDashboard();
       }
     });
 
@@ -1474,18 +1543,60 @@
 
       const status = (listed === null || listed === 0) ? "Needs Price" : "In Stock";
 
+      const name = document.getElementById("bottle-name").value.trim();
+      const brand = document.getElementById("bottle-brand").value.trim();
+      const concentration = document.getElementById("bottle-conc").value;
+      const size = document.getElementById("bottle-size").value;
+      const condition = document.getElementById("bottle-condition").value;
+      const warehouse = document.getElementById("bottle-warehouse").value.trim() || "Location A: 1";
+
+      if (!editId) {
+        const existing = findDuplicateFragrance({ name, brand, concentration, size }, items);
+        if (existing) {
+          const addConfirm = confirm(`A matching fragrance "${existing.name}" (${existing.brand}, ${existing.concentration}, ${existing.size}) already exists as ${existing.sku} (Current Qty: ${existing.qty}).\n\nWould you like to add +${qty} to ${existing.sku}'s quantity instead of creating a duplicate row?`);
+          if (addConfirm) {
+            const newQty = (Number(existing.qty) || 0) + qty;
+            const newStatus = existing.status === "Sold" ? (listed !== null ? "In Stock" : "Needs Price") : existing.status;
+            
+            if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+              try {
+                await window.sbClient.from("inventory").update({
+                  qty: newQty,
+                  status: newStatus,
+                  updated_at: new Date().toISOString()
+                }).eq("id", existing.id);
+              } catch (e) { console.warn("Add modal merge error:", e); }
+            }
+            existing.qty = newQty;
+            existing.status = newStatus;
+            showToast(`Merged +${qty} Qty into existing item ${existing.sku}!`);
+            document.getElementById("modal-bottle").classList.add("hidden");
+            if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+              fetchInventory();
+            } else {
+              renderDashboard();
+            }
+            return;
+          } else {
+            return;
+          }
+        }
+      }
+
+      const assignedSku = document.getElementById("bottle-sku").value.trim() || ("Item-" + getNextItemSequence(items));
+
       const payload = {
-        sku: document.getElementById("bottle-sku").value.trim() || `ARM-${Date.now()}`,
-        name: document.getElementById("bottle-name").value,
-        brand: document.getElementById("bottle-brand").value,
-        concentration: document.getElementById("bottle-conc").value,
-        size: document.getElementById("bottle-size").value,
-        condition: document.getElementById("bottle-condition").value,
+        sku: assignedSku,
+        name: name,
+        brand: brand,
+        concentration: concentration,
+        size: size,
+        condition: condition,
         qty: qty,
         listed_price: listed,
         retail_msrp: msrp,
         status: status,
-        warehouse: document.getElementById("bottle-warehouse").value || "Location A: 1",
+        warehouse: warehouse,
         updated_at: new Date().toISOString()
       };
 
@@ -1805,7 +1916,7 @@
       renderScannerTable();
     });
 
-    // Task 4: Staged Review Drawer Renderer (NO PRICE COLUMNS)
+    // Staged Review Drawer Renderer (NO PRICE COLUMNS)
     function renderScannerTable() {
       const tbody = document.getElementById("scanner-table-body");
       tbody.replaceChildren();
@@ -1824,6 +1935,9 @@
       commitBtn.disabled = false;
 
       scannedItems.forEach((item, index) => {
+        const existingMatch = findDuplicateFragrance(item, items);
+        item.existingMatch = existingMatch || null;
+
         const tr = document.createElement("tr");
         tr.className = "border-b border-slate-800/60 hover:bg-slate-800/30";
 
@@ -1857,8 +1971,21 @@
         inputName.value = item.name || "";
         inputName.placeholder = "Fragrance Name";
         inputName.className = "w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded text-white text-xs font-semibold focus:border-purple-500";
-        inputName.oninput = (e) => { scannedItems[index].name = e.target.value; };
+        inputName.oninput = (e) => {
+          scannedItems[index].name = e.target.value;
+          renderScannerTable();
+        };
         tdName.appendChild(inputName);
+
+        // Auto-Merge or New Item Badge
+        const badgeDiv = document.createElement("div");
+        badgeDiv.className = "mt-1";
+        if (item.existingMatch) {
+          badgeDiv.innerHTML = `<span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold text-[10px]">Merge with ${item.existingMatch.sku} (+${item.qty} Qty)</span>`;
+        } else {
+          badgeDiv.innerHTML = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">New Item</span>`;
+        }
+        tdName.appendChild(badgeDiv);
 
         // 3. House / Brand Column
         const tdBrand = document.createElement("td");
@@ -1868,7 +1995,10 @@
         inputBrand.value = item.brand || "";
         inputBrand.placeholder = "Brand";
         inputBrand.className = "w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded text-slate-200 text-xs focus:border-purple-500";
-        inputBrand.oninput = (e) => { scannedItems[index].brand = e.target.value; };
+        inputBrand.oninput = (e) => {
+          scannedItems[index].brand = e.target.value;
+          renderScannerTable();
+        };
         tdBrand.appendChild(inputBrand);
 
         // 4. Concentration Type Column
@@ -1883,7 +2013,10 @@
           if (item.concentration === c) opt.selected = true;
           selectConc.appendChild(opt);
         });
-        selectConc.onchange = (e) => { scannedItems[index].concentration = e.target.value; };
+        selectConc.onchange = (e) => {
+          scannedItems[index].concentration = e.target.value;
+          renderScannerTable();
+        };
         tdConc.appendChild(selectConc);
 
         // 5. Size Column
@@ -1891,9 +2024,12 @@
         tdSize.className = "py-2 px-3";
         const inputSize = document.createElement("input");
         inputSize.type = "text";
-        inputSize.value = item.size || "3.4oz 100ml";
+        inputSize.value = item.size || "3.4 oz / 100 ml (Standard Full Size)";
         inputSize.className = "w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded text-slate-300 text-xs focus:border-purple-500";
-        inputSize.oninput = (e) => { scannedItems[index].size = e.target.value; };
+        inputSize.oninput = (e) => {
+          scannedItems[index].size = e.target.value;
+          renderScannerTable();
+        };
         tdSize.appendChild(inputSize);
 
         // 6. Qty Column
@@ -1904,7 +2040,10 @@
         inputQty.min = "1";
         inputQty.value = item.qty || 1;
         inputQty.className = "w-14 px-1.5 py-1 bg-slate-950 border border-slate-700 rounded text-white text-xs font-mono font-bold text-center focus:border-purple-500";
-        inputQty.oninput = (e) => { scannedItems[index].qty = Math.max(1, parseInt(e.target.value, 10) || 1); };
+        inputQty.oninput = (e) => {
+          scannedItems[index].qty = Math.max(1, parseInt(e.target.value, 10) || 1);
+          renderScannerTable();
+        };
         tdQty.appendChild(inputQty);
 
         // 7. Condition Column
@@ -1912,7 +2051,7 @@
         tdCond.className = "py-2 px-3";
         const inputCond = document.createElement("input");
         inputCond.type = "text";
-        inputCond.value = item.condition || "New Sealed";
+        inputCond.value = item.condition || "Brand New / Factory Sealed";
         inputCond.className = "w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded text-slate-300 text-xs focus:border-purple-500";
         inputCond.oninput = (e) => { scannedItems[index].condition = e.target.value; };
         tdCond.appendChild(inputCond);
@@ -1944,7 +2083,7 @@
       });
     }
 
-    // Task 4: Batch Commit Logic (Defaults listed_price: null, status: "Needs Price")
+    // Batch Commit Logic (Defaults listed_price: null, status: "Needs Price")
     document.getElementById("btn-batch-commit").addEventListener("click", async () => {
       if (scannedItems.length === 0) return;
 
@@ -1952,34 +2091,81 @@
       commitBtn.disabled = true;
       commitBtn.textContent = "Committing Staged Items...";
 
-      const rowsToInsert = scannedItems.map((b, idx) => ({
-        id: `ARM-${Date.now()}-${idx}`,
-        sku: b.batchCode || `ARM-${Date.now().toString().slice(-5)}-${idx}`,
-        name: (b.name || "Unnamed Fragrance").trim(),
-        brand: (b.brand || "Designer House").trim(),
-        concentration: b.concentration || "EDP",
-        size: b.size || "3.4oz 100ml",
-        condition: b.condition || "New Sealed",
-        qty: Number(b.qty) || 1,
-        listed_price: null,
-        retail_msrp: null,
-        status: "Needs Price",
-        warehouse: "Shipment Inbound",
-        updated_at: new Date().toISOString()
-      }));
+      let nextInt = getNextItemSequence(items);
+      let mergedCount = 0;
+      let newCount = 0;
 
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
-        try {
-          const { error } = await window.sbClient.from("inventory").upsert(rowsToInsert);
-          if (error) {
-            console.warn("Supabase batch commit notice:", error.message);
+      for (const b of scannedItems) {
+        if (b.existingMatch) {
+          mergedCount++;
+          const newQty = (Number(b.existingMatch.qty) || 0) + (Number(b.qty) || 1);
+          const newStatus = b.existingMatch.status === "Sold" 
+            ? (b.existingMatch.listedPrice ? "In Stock" : "Needs Price") 
+            : b.existingMatch.status;
+
+          if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+            try {
+              await window.sbClient.from("inventory").update({
+                qty: newQty,
+                status: newStatus,
+                updated_at: new Date().toISOString()
+              }).eq("id", b.existingMatch.id);
+            } catch (e) {
+              console.warn("Cloud batch update match error:", e);
+            }
           }
-        } catch (e) {
-          console.warn("Cloud batch commit error:", e);
+          const localItem = items.find((it) => it.id === b.existingMatch.id);
+          if (localItem) {
+            localItem.qty = newQty;
+            localItem.status = newStatus;
+          }
+        } else {
+          newCount++;
+          const assignedSku = "Item-" + nextInt;
+          nextInt++;
+
+          const newRow = {
+            id: `ARM-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            sku: assignedSku,
+            name: (b.name || "Unnamed Fragrance").trim(),
+            brand: (b.brand || "Designer House").trim(),
+            concentration: b.concentration || "EDP",
+            size: b.size || "3.4 oz / 100 ml (Standard Full Size)",
+            condition: b.condition || "Brand New / Factory Sealed",
+            qty: Number(b.qty) || 1,
+            listed_price: null,
+            retail_msrp: null,
+            status: "Needs Price",
+            warehouse: "Shipment Inbound",
+            updated_at: new Date().toISOString()
+          };
+
+          if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+            try {
+              await window.sbClient.from("inventory").insert([newRow]);
+            } catch (e) {
+              console.warn("Cloud batch insert new item error:", e);
+            }
+          }
+
+          items.unshift({
+            id: newRow.id,
+            sku: newRow.sku,
+            name: newRow.name,
+            brand: newRow.brand,
+            concentration: newRow.concentration,
+            size: newRow.size,
+            condition: newRow.condition,
+            qty: newRow.qty,
+            listedPrice: null,
+            retailMSRP: null,
+            status: "Needs Price",
+            warehouse: newRow.warehouse
+          });
         }
       }
 
-      showToast(`✨ Committed ${rowsToInsert.length} staged item(s) as "Needs Price"!`);
+      showToast(`✨ Committed ${scannedItems.length} staged item(s) (${mergedCount} merged, ${newCount} new)!`);
       
       closeScannerModal();
       scannedItems = [];
@@ -1993,21 +2179,6 @@
       if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
         fetchInventory();
       } else {
-        const mappedNew = rowsToInsert.map((row) => ({
-          id: row.id,
-          sku: row.sku,
-          name: row.name,
-          brand: row.brand,
-          concentration: row.concentration,
-          size: row.size,
-          condition: row.condition,
-          qty: row.qty,
-          listedPrice: null,
-          retailMSRP: null,
-          status: "Needs Price",
-          warehouse: row.warehouse,
-        }));
-        items = [...mappedNew, ...items];
         renderDashboard();
       }
     });
@@ -2026,7 +2197,9 @@
     document.getElementById("btn-open-add").addEventListener("click", () => {
       document.getElementById("form-bottle").reset();
       document.getElementById("bottle-id").value = "";
-      document.getElementById("bottle-sku").value = "";
+      const skuInput = document.getElementById("bottle-sku");
+      skuInput.value = "Item-" + getNextItemSequence(items);
+      skuInput.readOnly = true;
       document.getElementById("bottle-qty").value = "1";
       document.getElementById("modal-bottle-title").textContent = "Add Fragrance Bottle";
       document.getElementById("modal-bottle").classList.remove("hidden");
