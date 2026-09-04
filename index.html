@@ -349,10 +349,10 @@
     </div>
 
     <section class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 overflow-hidden shadow-xl">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto max-h-[70vh]">
         <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="border-b border-slate-800 bg-[#0d1424] text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+          <thead class="sticky top-0 z-20 bg-[#0d1424] shadow">
+            <tr class="border-b border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-bold">
               <th class="py-3.5 px-4 w-28 font-mono">Item #</th>
               <th class="py-3.5 px-4">Fragrance & Brand</th>
               <th class="py-3.5 px-4 w-28">Type</th>
@@ -367,6 +367,30 @@
           </thead>
           <tbody id="inventory-table-body" class="divide-y divide-slate-800/60 text-xs font-medium"></tbody>
         </table>
+      </div>
+
+      <!-- Table Pagination Control Bar -->
+      <div id="pagination-bar" class="flex flex-wrap items-center justify-between gap-3 px-5 py-3 bg-[#0d1424]/90 border-t border-slate-800 text-xs text-slate-400">
+        <div class="flex items-center gap-3">
+          <span>Rows per page:</span>
+          <select id="pagination-page-size" class="px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-lg text-white font-semibold focus:outline-none focus:border-emerald-500 cursor-pointer">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="All">All</option>
+          </select>
+          <span id="pagination-summary" class="font-mono text-slate-300 font-medium">Showing 0 of 0 items</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-prev-page" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-all cursor-pointer">
+            Previous
+          </button>
+          <div id="pagination-numbers" class="flex items-center gap-1 font-mono"></div>
+          <button id="btn-next-page" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-all cursor-pointer">
+            Next
+          </button>
+        </div>
       </div>
     </section>
   </main>
@@ -642,6 +666,10 @@
     let scannedItems = [];
     let currentDownsampledImage = null;
 
+    // Pagination state
+    let currentPage = 1;
+    let pageSize = 25;
+
     try {
       if (window.supabase && typeof window.supabase.createClient === "function") {
         window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -703,9 +731,13 @@
 
     function findDuplicateFragrance(incoming, list) {
       const clean = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const cIncName = clean(incoming.name);
+      if (!cIncName) return null;
+
       return list.find((it) => {
         const matchBrand = clean(it.brand) === clean(incoming.brand);
-        const matchName = clean(it.name) === clean(incoming.name);
+        const cItName = clean(it.name);
+        const matchName = Boolean(cItName && cIncName && (cItName.includes(cIncName) || cIncName.includes(cItName)));
         const matchConc = clean(it.concentration) === clean(incoming.concentration);
         const matchSize = clean(it.size) === clean(incoming.size);
         return matchBrand && matchName && matchConc && matchSize;
@@ -892,6 +924,17 @@
           status: row.status || (row.listed_price ? "In Stock" : "Needs Price"),
           warehouse: row.warehouse,
         }));
+
+        // Purge any accidental test rows containing "SUP-8801"
+        const badRows = items.filter(it => String(it.sku).includes("SUP-8801") || String(it.id).includes("SUP-8801") || String(it.name).includes("SUP-8801"));
+        if (badRows.length > 0) {
+          items = items.filter(it => !String(it.sku).includes("SUP-8801") && !String(it.id).includes("SUP-8801") && !String(it.name).includes("SUP-8801"));
+          if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+            badRows.forEach(async (r) => {
+              try { await window.sbClient.from("inventory").delete().eq("id", r.id); } catch(e){}
+            });
+          }
+        }
 
         renderDashboard();
       } catch (err) {
@@ -1176,11 +1219,66 @@
         return 0;
       });
 
-      document.getElementById("label-shown-count").textContent = filtered.length;
+      const totalCount = filtered.length;
+      document.getElementById("label-shown-count").textContent = totalCount;
       document.getElementById("label-total-count").textContent = items.length;
+
+      const effectiveSize = pageSize === "All" ? totalCount : Number(pageSize);
+      const totalPages = Math.max(1, Math.ceil(totalCount / (effectiveSize || 1)));
+
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIdx = totalCount === 0 ? 0 : (currentPage - 1) * effectiveSize;
+      const endIdx = pageSize === "All" ? totalCount : Math.min(totalCount, currentPage * effectiveSize);
+
+      const pagedItems = filtered.slice(startIdx, endIdx);
 
       const tbody = document.getElementById("inventory-table-body");
       tbody.replaceChildren();
+
+      // Update Pagination Summary & Controls UI
+      const summaryEl = document.getElementById("pagination-summary");
+      if (summaryEl) {
+        if (totalCount === 0) {
+          summaryEl.textContent = "Showing 0 of 0 items";
+        } else {
+          summaryEl.textContent = `Showing ${startIdx + 1}–${endIdx} of ${totalCount} items`;
+        }
+      }
+
+      const prevBtn = document.getElementById("btn-prev-page");
+      const nextBtn = document.getElementById("btn-next-page");
+      if (prevBtn) prevBtn.disabled = (currentPage <= 1);
+      if (nextBtn) nextBtn.disabled = (currentPage >= totalPages || pageSize === "All");
+
+      const numbersDiv = document.getElementById("pagination-numbers");
+      if (numbersDiv) {
+        numbersDiv.replaceChildren();
+        if (pageSize !== "All" && totalPages > 1) {
+          const maxButtons = 5;
+          let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+          let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+          if (endPage - startPage + 1 < maxButtons) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+          }
+
+          for (let p = startPage; p <= endPage; p++) {
+            const btn = document.createElement("button");
+            btn.className = `w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              p === currentPage
+                ? "bg-emerald-500 text-slate-950 shadow"
+                : "bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white"
+            }`;
+            btn.textContent = p;
+            btn.onclick = () => {
+              currentPage = p;
+              renderTable();
+            };
+            numbersDiv.appendChild(btn);
+          }
+        }
+      }
 
       if (filtered.length === 0) {
         const tr = document.createElement("tr");
@@ -1214,7 +1312,7 @@
         return;
       }
 
-      filtered.forEach((it) => {
+      pagedItems.forEach((it) => {
         const discount = (it.retailMSRP && it.listedPrice) ? Math.max(0, it.retailMSRP - it.listedPrice) : 0;
         const isSold = it.status === "Sold";
         const isNeedsPrice = it.status === "Needs Price" || (it.listedPrice === null || it.listedPrice === undefined);
@@ -1222,7 +1320,7 @@
         const tr = document.createElement("tr");
         tr.className = `border-b border-slate-800/60 ${isSold ? "opacity-60 bg-slate-950/20" : isNeedsPrice ? "bg-amber-500/[0.02] hover:bg-amber-500/[0.05]" : "hover:bg-slate-800/30"}`;
 
-        // Physical SKU
+        // Item #
         const tdSku = document.createElement("td");
         tdSku.className = "py-3 px-4 font-mono-num text-slate-400 font-bold";
         tdSku.textContent = it.sku || "";
@@ -1631,7 +1729,7 @@
         showToast("No items to copy.");
         return;
       }
-      const headers = ["Physical SKU\tFragrance Name\tBrand\tConcentration\tBottle Size\tCondition\tQty\tListed Price\tRetail MSRP\tStatus\tWarehouse"];
+      const headers = ["Item #\tFragrance Name\tBrand\tConcentration\tBottle Size\tCondition\tQty\tListed Price\tRetail MSRP\tStatus\tWarehouse"];
       const rows = items.map(
         (i) => `${i.sku}\t${i.name}\t${i.brand}\t${i.concentration}\t${i.size}\t${i.condition}\t${i.qty || 1}\t${i.listedPrice || ""}\t${i.retailMSRP || ""}\t${i.status}\t${i.warehouse}`
       );
@@ -1656,7 +1754,7 @@
         showToast("No items to export.");
         return;
       }
-      const headers = ["Physical SKU", "Fragrance Name", "Brand", "Concentration", "Size", "Condition", "Qty", "Listed Price", "Retail MSRP", "Status", "Warehouse"];
+      const headers = ["Item #", "Fragrance Name", "Brand", "Concentration", "Size", "Condition", "Qty", "Listed Price", "Retail MSRP", "Status", "Warehouse"];
       const rows = items.map((i) => [
         `"${(i.sku || "").replace(/"/g, '""')}"`,
         `"${(i.name || "").replace(/"/g, '""')}"`,
@@ -2213,7 +2311,29 @@
 
     // Live search & filters
     ["search-input", "filter-brand", "filter-type", "filter-status", "filter-sort"].forEach((id) => {
-      document.getElementById(id).addEventListener("input", renderTable);
+      document.getElementById(id).addEventListener("input", () => {
+        currentPage = 1;
+        renderTable();
+      });
+    });
+
+    // Pagination controls
+    document.getElementById("pagination-page-size")?.addEventListener("change", (e) => {
+      pageSize = e.target.value;
+      currentPage = 1;
+      renderTable();
+    });
+
+    document.getElementById("btn-prev-page")?.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    });
+
+    document.getElementById("btn-next-page")?.addEventListener("click", () => {
+      currentPage++;
+      renderTable();
     });
 
     // Check active session on boot
