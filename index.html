@@ -2351,7 +2351,7 @@
       }
     }
 
-    // Vision Scanner Call via Netlify Function
+    // Vision Scanner Call via Cloudflare Pages Function (/api/scan)
     document.getElementById("btn-analyze-photo").addEventListener("click", async () => {
       if (!currentDownsampledImage || !currentDownsampledImage.base64Data) {
         showToast("Please upload an image first.");
@@ -2376,11 +2376,7 @@
       statusBox.appendChild(scanningMsg);
 
       try {
-        const endpoint = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-          ? "https://st0ck.netlify.app/.netlify/functions/gemini"
-          : "/.netlify/functions/gemini";
-
-        const response = await fetch(endpoint, {
+        const response = await fetch("/api/scan", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
