@@ -136,12 +136,6 @@
           <span id="login-error-msg"></span>
         </div>
 
-        <!-- Offline / Guest Mode Bypass -->
-        <div class="pt-2 text-center border-t border-slate-800/80">
-          <button id="btn-bypass-offline" type="button" onclick="bypassOffline()" class="text-[11px] text-slate-400 hover:text-emerald-400 underline font-medium transition-colors cursor-pointer py-1 px-2">
-            Continue in Local Mode (Without Login)
-          </button>
-        </div>
       </form>
     </div>
   </div>
@@ -932,12 +926,15 @@
     let pageSize = 25;
 
     try {
-      if (window.supabase && typeof window.supabase.createClient === "function") {
-        window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const supabaseLib = window.supabase || window.Supabase;
+      if (supabaseLib && typeof supabaseLib.createClient === "function") {
+        window.sbClient = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log("Supabase client initialized successfully.");
+      } else {
+        console.error("Supabase CDN failed to mount to window.");
       }
     } catch (e) {
-      console.warn("Supabase client init note:", e);
+      console.error("Supabase client init error:", e);
     }
 
     const formatMoney = (n) => {
@@ -1036,66 +1033,93 @@
       }
     };
 
-    window.bypassOffline = function() {
-      console.log("Bypass clicked: loading local mode");
-      setLoggedInState({ email: "guest@aromas.local" });
-      showToast("Operating in Local / Offline Mode.");
-    };
-
     // ==============================================================
     // 3. AUTHENTICATION & SESSION PERSISTENCE
     // ==============================================================
     async function checkSession() {
-      if (!window.sbClient) return;
+      if (!window.sbClient) {
+        setLoggedOutState();
+        return;
+      }
       try {
-        const { data: { session } } = await window.sbClient.auth.getSession();
-        if (session && session.user) {
+        const { data: { session }, error } = await window.sbClient.auth.getSession();
+        if (!error && session && session.user && session.user.id) {
           setLoggedInState(session.user);
         } else {
           setLoggedOutState();
         }
 
         window.sbClient.auth.onAuthStateChange((event, session) => {
-          if (event === "SIGNED_IN" && session?.user) {
+          if (event === "SIGNED_IN" && session?.user && session.user.id) {
             setLoggedInState(session.user);
-          } else if (event === "SIGNED_OUT") {
+          } else if (event === "SIGNED_OUT" || !session?.user) {
             setLoggedOutState();
           }
         });
       } catch (e) {
         console.warn("Session check notice:", e);
+        setLoggedOutState();
       }
     }
 
+    // Enforce auth check on view rendering (guards against manual DOM unhiding)
+    const dashboardViewEl = document.getElementById("view-dashboard");
+    if (dashboardViewEl) {
+      const authGuardObserver = new MutationObserver(() => {
+        if (!currentUser || !currentUser.id) {
+          if (!dashboardViewEl.classList.contains("hidden")) {
+            dashboardViewEl.classList.add("hidden");
+            document.getElementById("view-login")?.classList.remove("hidden");
+            document.getElementById("header-actions")?.classList.add("hidden");
+            const tbody = document.getElementById("table-body");
+            if (tbody) tbody.innerHTML = "";
+          }
+        }
+      });
+      authGuardObserver.observe(dashboardViewEl, { attributes: true, attributeFilter: ["class", "style"] });
+    }
+
     function setLoggedInState(user) {
+      if (!user || !user.id) {
+        setLoggedOutState();
+        return;
+      }
       currentUser = user;
-      document.getElementById("view-login").classList.add("hidden");
-      document.getElementById("view-dashboard").classList.remove("hidden");
-      document.getElementById("header-actions").classList.remove("hidden");
+      document.getElementById("view-login")?.classList.add("hidden");
+      document.getElementById("view-dashboard")?.classList.remove("hidden");
+      document.getElementById("header-actions")?.classList.remove("hidden");
       document.getElementById("user-email-display").textContent = user.email || "Active Member";
       
       const badge = document.getElementById("badge-cloud-status");
-      badge.textContent = user.email === "guest@aromas.local" ? "Local Mode" : "Live Cloud Synced";
-      badge.className = "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
-
-      if (user.email !== "guest@aromas.local") {
-        fetchInventory();
-        listenToRealtimeChanges();
-      } else {
-        renderDashboard();
+      if (badge) {
+        badge.textContent = "Live Cloud Synced";
+        badge.className = "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
       }
+
+      fetchInventory();
+      listenToRealtimeChanges();
     }
 
     function setLoggedOutState() {
       currentUser = null;
       items = [];
-      document.getElementById("view-login").classList.remove("hidden");
-      document.getElementById("view-dashboard").classList.add("hidden");
-      document.getElementById("header-actions").classList.add("hidden");
+      document.getElementById("view-login")?.classList.remove("hidden");
+      document.getElementById("view-dashboard")?.classList.add("hidden");
+      document.getElementById("header-actions")?.classList.add("hidden");
+
+      // Prevent rendering cached rows if session is absent
+      const tbody = document.getElementById("table-body");
+      if (tbody) tbody.innerHTML = "";
+      const labelShown = document.getElementById("label-shown-count");
+      if (labelShown) labelShown.textContent = "0";
+      const labelTotal = document.getElementById("label-total-count");
+      if (labelTotal) labelTotal.textContent = "0";
 
       const badge = document.getElementById("badge-cloud-status");
-      badge.textContent = "Supabase Connected";
-      badge.className = "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+      if (badge) {
+        badge.textContent = "Supabase Connected";
+        badge.className = "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+      }
     }
 
     window.handleLoginSubmit = async function(e) {
@@ -1229,7 +1253,7 @@
         const badRows = items.filter(it => String(it.sku).includes("SUP-8801") || String(it.id).includes("SUP-8801") || String(it.name).includes("SUP-8801"));
         if (badRows.length > 0) {
           items = items.filter(it => !String(it.sku).includes("SUP-8801") && !String(it.id).includes("SUP-8801") && !String(it.name).includes("SUP-8801"));
-          if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+          if (window.sbClient && currentUser) {
             badRows.forEach(async (r) => {
               try { await window.sbClient.from("inventory").delete().eq("id", r.id); } catch(e){}
             });
@@ -1264,6 +1288,10 @@
     // 5. DASHBOARD RENDERING & DYNAMIC METRIC MATH
     // ==============================================================
     function renderDashboard() {
+      if (!currentUser || !currentUser.id) {
+        setLoggedOutState();
+        return;
+      }
       let totalUnitsInStock = 0;
       let soldUnits = 0;
       let totalItems = items.length;
@@ -1459,7 +1487,7 @@
       it.status = nextStatus;
       renderDashboard();
 
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+      if (window.sbClient && currentUser) {
         try {
           await window.sbClient
             .from("inventory")
@@ -1495,7 +1523,7 @@
 
       renderDashboard();
 
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+      if (window.sbClient && currentUser) {
         try {
           await window.sbClient
             .from("inventory")
@@ -1509,6 +1537,11 @@
 
     // Master Table Renderer
     function renderTable() {
+      if (!currentUser || !currentUser.id) {
+        const tbody = document.getElementById("table-body");
+        if (tbody) tbody.innerHTML = "";
+        return;
+      }
       const q = document.getElementById("search-input").value.toLowerCase().trim();
       const brandF = document.getElementById("filter-brand").value;
       const typeF = document.getElementById("filter-type").value;
@@ -1870,7 +1903,7 @@
     // 6. CLOUD ACTIONS & FORM HANDLERS
     // ==============================================================
     async function deleteBottle(id) {
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+      if (window.sbClient && currentUser) {
         try {
           await window.sbClient.from("inventory").delete().eq("id", id);
         } catch (e) {}
@@ -1962,7 +1995,7 @@
             const newQty = (Number(existing.qty) || 0) + qty;
             const newStatus = existing.status === "Sold" ? (existing.listedPrice ? "In Stock" : "Needs Price") : existing.status;
             
-            if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+            if (window.sbClient && currentUser) {
               try {
                 await window.sbClient.from("inventory").update({
                   qty: newQty,
@@ -2007,7 +2040,7 @@
               updated_at: new Date().toISOString()
             };
 
-            if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+            if (window.sbClient && currentUser) {
               try {
                 await window.sbClient.from("inventory").insert([newRow]);
               } catch (e) {
@@ -2036,7 +2069,7 @@
       document.getElementById("modal-import").classList.add("hidden");
       document.getElementById("import-textarea").value = "";
       showToast(`✨ Import complete (${mergedCount} merged into existing items, ${newCount} new items created)!`);
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+      if (window.sbClient && currentUser) {
         fetchInventory();
       } else {
         renderDashboard();
@@ -2078,7 +2111,7 @@
             const newQty = (Number(existing.qty) || 0) + qty;
             const newStatus = existing.status === "Sold" ? (listed !== null ? "In Stock" : "Needs Price") : existing.status;
             
-            if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+            if (window.sbClient && currentUser) {
               try {
                 await window.sbClient.from("inventory").update({
                   qty: newQty,
@@ -2091,7 +2124,7 @@
             existing.status = newStatus;
             showToast(`Merged +${qty} Qty into existing item ${existing.sku}!`);
             document.getElementById("modal-bottle").classList.add("hidden");
-            if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+            if (window.sbClient && currentUser) {
               fetchInventory();
             } else {
               renderDashboard();
@@ -2121,7 +2154,7 @@
       };
 
       if (editId) {
-        if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+        if (window.sbClient && currentUser) {
           try { await window.sbClient.from("inventory").update(payload).eq("id", editId); } catch(e) {}
         } else {
           items = items.map((it) => it.id === editId ? { ...it, ...payload, listedPrice: listed, retailMSRP: msrp } : it);
@@ -2129,7 +2162,7 @@
         showToast("Bottle updated.");
       } else {
         payload.id = `ARM-${Date.now()}`;
-        if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+        if (window.sbClient && currentUser) {
           try { await window.sbClient.from("inventory").insert([payload]); } catch(e) {}
         } else {
           items.unshift({ ...payload, listedPrice: listed, retailMSRP: msrp });
@@ -2138,7 +2171,7 @@
       }
 
       document.getElementById("modal-bottle").classList.add("hidden");
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+      if (window.sbClient && currentUser) {
         fetchInventory();
       } else {
         renderDashboard();
@@ -2623,7 +2656,7 @@
             ? (b.existingMatch.listedPrice ? "In Stock" : "Needs Price") 
             : b.existingMatch.status;
 
-          if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+          if (window.sbClient && currentUser) {
             try {
               await window.sbClient.from("inventory").update({
                 qty: newQty,
@@ -2660,7 +2693,7 @@
             updated_at: new Date().toISOString()
           };
 
-          if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+          if (window.sbClient && currentUser) {
             try {
               await window.sbClient.from("inventory").insert([newRow]);
             } catch (e) {
@@ -2696,7 +2729,7 @@
       document.getElementById("btn-analyze-photo").disabled = true;
       commitBtn.textContent = "Batch Commit to Vault (As Needs Price)";
 
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+      if (window.sbClient && currentUser) {
         fetchInventory();
       } else {
         renderDashboard();
@@ -2922,7 +2955,7 @@
 
     // Supabase Storage uploader with dataUrl fallback
     async function uploadListingPhoto(dataUrl, sku, index) {
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+      if (window.sbClient && currentUser) {
         try {
           const res = await fetch(dataUrl);
           const blob = await res.blob();
@@ -3315,7 +3348,7 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
         saveBtn.textContent = "Saving...";
       }
 
-      if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
+      if (window.sbClient && currentUser) {
         try {
           const payload = {
             listed_price: listedPrice,
