@@ -755,15 +755,27 @@
               </div>
             </div>
 
-            <!-- UPC / GTIN Input with Barcode Camera Scanner -->
-            <div>
-              <label class="block text-slate-400 font-semibold text-xs mb-1">UPC / GTIN Barcode</label>
-              <div class="flex items-center gap-2">
-                <input id="studio-upc" type="text" placeholder="e.g. 3349668515660 or 085715165147" class="flex-1 px-3.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-indigo-500">
-                <button type="button" id="btn-scan-upc" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
-                  <span>📷</span>
-                  <span>Scan Barcode</span>
-                </button>
+            <!-- UPC / GTIN & Listed Price ($) -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div class="sm:col-span-7">
+                <label class="block text-slate-400 font-semibold text-xs mb-1">UPC / GTIN Barcode</label>
+                <div class="flex items-center gap-2">
+                  <input id="studio-upc" type="text" placeholder="e.g. 3349668515660 or 085715165147" class="flex-1 px-3.5 py-2 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white font-mono placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                  <button type="button" id="btn-scan-upc" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
+                    <span>📷</span>
+                    <span>Scan Barcode</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="sm:col-span-5">
+                <label for="studioListedPrice" class="block text-slate-400 font-semibold text-xs mb-1">Listed Price ($)</label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-amber-400 font-mono font-bold text-xs">
+                    $
+                  </div>
+                  <input id="studioListedPrice" type="number" step="0.01" placeholder="0.00" class="w-full pl-7 pr-3 py-2 text-xs bg-neutral-900 border border-neutral-700 rounded-xl text-white font-mono placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all">
+                </div>
               </div>
             </div>
 
@@ -1195,6 +1207,7 @@
             condition: row.condition,
             qty: Number(row.qty) || 1,
             listedPrice: listPrice,
+            listed_price: listPrice,
             retailMSRP: row.retail_msrp !== null && row.retail_msrp !== undefined ? Number(row.retail_msrp) : null,
             status: initialStatus,
             warehouse: row.warehouse,
@@ -3101,6 +3114,13 @@
       // Populate UPC / GTIN
       document.getElementById("studio-upc").value = it.upcGtin || it.upc_gtin || it.upc || "";
 
+      // Populate Listed Price
+      const studioPriceInput = document.getElementById("studioListedPrice");
+      if (studioPriceInput) {
+        const rawPrice = it.listed_price ?? it.price ?? it.listedPrice ?? "";
+        studioPriceInput.value = (rawPrice !== null && rawPrice !== undefined && rawPrice !== "") ? rawPrice : "";
+      }
+
       // Populate Title & Description (auto-build if blank)
       const titleInput = document.getElementById("studio-title");
       titleInput.value = it.listingTitle || it.listing_title || "";
@@ -3263,11 +3283,19 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
       const condition = document.getElementById("studio-condition")?.value || it.condition;
       const upc = document.getElementById("studio-upc")?.value.trim() || "";
 
+      // Parse Listed Price
+      const priceRaw = document.getElementById("studioListedPrice")?.value?.trim();
+      const listedPrice = (priceRaw !== undefined && priceRaw !== "" && !isNaN(parseFloat(priceRaw)))
+        ? parseFloat(priceRaw)
+        : null;
+
       // Explicitly respect whatever status is currently selected in #studio-status (Zero forced changes)
       const selectedStatus = document.getElementById("studio-status")?.value || it.status || "Needs Listing";
 
       // Update local item
       it.status = selectedStatus;
+      it.listed_price = listedPrice;
+      it.listedPrice = listedPrice;
       it.listing_title = title;
       it.listingTitle = title;
       it.listing_description = desc;
@@ -3290,6 +3318,7 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
       if (window.sbClient && currentUser?.email !== "guest@aromas.local") {
         try {
           const payload = {
+            listed_price: listedPrice,
             listing_title: title,
             listing_description: desc,
             listing_category: category,
@@ -3300,12 +3329,17 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
             condition: it.condition,
             updated_at: new Date().toISOString()
           };
-          await window.sbClient
+          const { error } = await window.sbClient
             .from("inventory")
             .update(payload)
             .eq("id", it.id);
+          if (error) {
+            console.error("Supabase studio update error:", error);
+            showToast(`⚠️ Error saving price to cloud: ${error.message}`);
+          }
         } catch (e) {
-          console.warn("Cloud studio update notice:", e);
+          console.error("Cloud studio update exception:", e);
+          showToast(`⚠️ Cloud sync failed: ${e.message || e}`);
         }
       }
 
@@ -3559,7 +3593,11 @@ Every bottle in our private inventory is 100% guaranteed authentic, verified for
       const cat = document.getElementById("studio-category")?.value || "Fragrances";
       const cond = document.getElementById("studio-condition")?.value || it.condition;
       const upc = document.getElementById("studio-upc")?.value || "N/A";
-      const price = (it.listedPrice !== null && it.listedPrice !== undefined) ? formatMoney(it.listedPrice) : "Unpriced";
+      const priceInputVal = document.getElementById("studioListedPrice")?.value?.trim();
+      const parsedPrice = (priceInputVal !== undefined && priceInputVal !== "" && !isNaN(parseFloat(priceInputVal)))
+        ? parseFloat(priceInputVal)
+        : (it.listed_price ?? it.listedPrice ?? null);
+      const price = (parsedPrice !== null && parsedPrice !== undefined) ? formatMoney(parsedPrice) : "Unpriced";
       const desc = document.getElementById("studio-description")?.value || "";
 
       const packet = `=== MARKETPLACE LISTING PACKET (EBAY / MERCARI) ===
