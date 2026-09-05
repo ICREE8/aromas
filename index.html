@@ -2376,7 +2376,11 @@
       statusBox.appendChild(scanningMsg);
 
       try {
-        const response = await fetch("/.netlify/functions/gemini", {
+        const endpoint = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+          ? "https://st0ck.netlify.app/.netlify/functions/gemini"
+          : "/.netlify/functions/gemini";
+
+        const response = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
