@@ -119,7 +119,7 @@ export async function onRequestPost(context) {
       data = await callGemini(imageBase64, apiKey);
     } catch (geminiErr) {
       const status = geminiErr.message?.match(/GEMINI_FAIL:(\d+)/)?.[1];
-      const isRetryable = ["429", "500", "502", "503"].includes(status);
+      const isRetryable = ["429", "500", "502", "503", "504", "524"].includes(status);
 
       // ── Failover to Workers AI if Gemini is throttled/down ──
       if (isRetryable && context.env?.AI) {
