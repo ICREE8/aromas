@@ -2239,8 +2239,8 @@
     // 7. TASK 3 & 4: AI SUPPLIER VISION SCANNER & STAGED REVIEW DRAWER
     // ==============================================================
 
-    // Task 3: Client-Side Canvas Downsampling (2400x2400 @ 0.88 JPEG)
-    function downsampleImage(file, maxDimension = 2400, quality = 0.88) {
+    // Task 3: Client-Side Canvas Downsampling (1600x1600 @ 0.82 JPEG)
+    function downsampleImage(file, maxDimension = 1600, quality = 0.82) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -2327,9 +2327,9 @@
         return;
       }
 
-      showToast("Downsampling photo via Canvas (2400x2400 @ 0.88 JPEG)...");
+      showToast("Compressing photo via Canvas (1600×1600 @ 0.82 JPEG)...");
       try {
-        const result = await downsampleImage(file, 2400, 0.88);
+        const result = await downsampleImage(file, 1600, 0.82);
         currentDownsampledImage = result;
 
         const previewImg = document.getElementById("scanner-preview-img");
@@ -2343,7 +2343,7 @@
         statusBox.replaceChildren();
         const statusDiv = document.createElement("div");
         statusDiv.className = "flex items-center gap-2 text-emerald-400 font-semibold";
-        statusDiv.textContent = `✓ Photo downsampled (${result.width}x${result.height} @ 0.88 quality). Ready for AI Vision scan.`;
+        statusDiv.textContent = `✓ Photo compressed (${result.width}×${result.height} @ 0.82 quality). Ready for AI Vision scan.`;
         statusBox.appendChild(statusDiv);
       } catch (err) {
         showToast("Error processing photo.");
