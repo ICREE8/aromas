@@ -1,2 +1,11 @@
 # Local Netlify folder
 .netlify
+
+# Cloudflare local secrets & env files
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+
+# Wrangler local state & cache
+.wrangler
