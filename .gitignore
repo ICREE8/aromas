@@ -9,3 +9,7 @@
 
 # Wrangler local state & cache
 .wrangler
+
+# Local dev server
+dev-server.mjs
+

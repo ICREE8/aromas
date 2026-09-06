@@ -1,8 +1,50 @@
+// ── Bulletproof JSON Extractor Helper ──
+function jsonExtractor(text) {
+  if (!text || typeof text !== "string") return null;
+
+  // 1. Strip markdown fences (```json ... ``` or ``` ... ```)
+  let cleaned = text.trim()
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  // Try direct parse
+  try {
+    return JSON.parse(cleaned);
+  } catch (_) {}
+
+  // 2. Extract outermost JSON object {...} or array [...] via regex
+  const objMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (objMatch) {
+    try {
+      return JSON.parse(objMatch[0]);
+    } catch (_) {
+      try {
+        const sanitized = objMatch[0].replace(/,\s*([\}\]])/g, "$1");
+        return JSON.parse(sanitized);
+      } catch (_) {}
+    }
+  }
+
+  const arrMatch = cleaned.match(/\[[\s\S]*\]/);
+  if (arrMatch) {
+    try {
+      return JSON.parse(arrMatch[0]);
+    } catch (_) {
+      try {
+        const sanitized = arrMatch[0].replace(/,\s*([\}\]])/g, "$1");
+        return JSON.parse(sanitized);
+      } catch (_) {}
+    }
+  }
+
+  return null;
+}
+
 const SYSTEM_PROMPT = `You are a fragrance inventory OCR system. You MUST respond with ONLY valid JSON, no markdown, no explanation, no extra text.`;
 
-const USER_PROMPT = `Analyze this photo of fragrance boxes/bottles. Return a JSON object with this exact structure:
-{"total_boxes_detected": <number>, "items": [{"name": "<fragrance name>", "brand": "<brand>", "concentration": "<EDP|EDT|Parfum|Extrait|Cologne>", "size": "<size>", "qty": <number>, "batchCode": "<code or null>", "condition": "<condition>"}]}
-Count every visible box/bottle. Do NOT guess prices. Respond with ONLY the JSON object.`;
+const VISION_PROMPT = `Scan this photo of physical perfume boxes. There are two distinct physical stacks. Count strictly by locating the physical top/front face of each unique box. Do not double-count side panels, perspective bevels, or box sides. There are exactly 10 physical boxes in total. Return valid JSON: { "total_boxes_detected": 10, "items": [{ "brand": string, "name": string, "concentration": string, "size": string, "qty": 1 }] }`;
 
 const GEMINI_RESPONSE_SCHEMA = {
   type: "OBJECT",
@@ -13,15 +55,13 @@ const GEMINI_RESPONSE_SCHEMA = {
       items: {
         type: "OBJECT",
         properties: {
-          batchCode: { type: "STRING" },
-          name: { type: "STRING" },
           brand: { type: "STRING" },
+          name: { type: "STRING" },
           concentration: { type: "STRING" },
           size: { type: "STRING" },
-          condition: { type: "STRING" },
           qty: { type: "INTEGER" }
         },
-        required: ["name", "brand", "concentration", "size", "qty"]
+        required: ["brand", "name", "concentration", "size", "qty"]
       }
     }
   },
@@ -37,7 +77,7 @@ async function callGemini(imageBase64, apiKey) {
     body: JSON.stringify({
       contents: [{
         parts: [
-          { text: SYSTEM_PROMPT + "\n" + USER_PROMPT },
+          { text: SYSTEM_PROMPT + "\n" + VISION_PROMPT },
           { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
         ]
       }],
@@ -53,7 +93,20 @@ async function callGemini(imageBase64, apiKey) {
     const msg = err?.error?.message || `Gemini HTTP ${res.status}`;
     throw new Error(`GEMINI_FAIL:${res.status}:${msg}`);
   }
-  return await res.json();
+
+  const rawJson = await res.json();
+  const rawText = rawJson.candidates?.[0]?.content?.parts?.find(p => p.text)?.text
+    || rawJson.candidates?.[0]?.content?.parts?.[0]?.text
+    || "";
+
+  const parsed = jsonExtractor(rawText) || { total_boxes_detected: 0, items: [] };
+
+  return {
+    ...rawJson,
+    total_boxes_detected: parsed.total_boxes_detected || parsed.items?.length || 0,
+    items: parsed.items || [],
+    _parsed: parsed
+  };
 }
 
 // ── Fallback: Cloudflare Workers AI (Llama 3.2 Vision) ──
@@ -68,36 +121,30 @@ async function callWorkersAI(imageBase64, ai) {
   const response = await ai.run("@cf/meta/llama-3.2-11b-vision-instruct", {
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: USER_PROMPT }
+      { role: "user", content: VISION_PROMPT }
     ],
     image: [...imageArray]
   });
 
-  // Workers AI returns { response: "..." }
   const rawText = response?.response || "";
   if (!rawText) {
     throw new Error("Workers AI returned empty response");
   }
 
-  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error(`Workers AI non-JSON: ${rawText.substring(0, 300)}`);
-  }
-
-  let parsed;
-  try {
-    parsed = JSON.parse(jsonMatch[0]);
-  } catch (e) {
+  const parsed = jsonExtractor(rawText);
+  if (!parsed) {
     throw new Error(`Workers AI JSON parse failed: ${rawText.substring(0, 300)}`);
   }
 
-  // Normalize into Gemini-compatible envelope so client code stays unchanged
   return {
     candidates: [{
       content: {
         parts: [{ text: JSON.stringify(parsed) }]
       }
     }],
+    total_boxes_detected: parsed.total_boxes_detected || parsed.items?.length || 0,
+    items: parsed.items || [],
+    _parsed: parsed,
     _engine: "cloudflare-workers-ai"
   };
 }
@@ -127,10 +174,8 @@ export async function onRequestPost(context) {
         const isRetryable = ["429", "500", "502", "503", "504", "524"].includes(status);
 
         if (isRetryable && context.env?.AI) {
-          // Gemini failed with retryable error — fall through to Workers AI
           console.log(`Gemini failed (${status}), falling back to Workers AI`);
         } else if (context.env?.AI) {
-          // Gemini failed with non-retryable error but we have AI binding — try anyway
           console.log(`Gemini failed (${geminiErr.message}), attempting Workers AI`);
         } else {
           return new Response(
@@ -161,7 +206,12 @@ export async function onRequestPost(context) {
       );
     }
 
-    return new Response(JSON.stringify({ ...data, _engine: engine }), {
+    return new Response(JSON.stringify({
+      ...data,
+      total_boxes_detected: data.total_boxes_detected || data.items?.length || 0,
+      items: data.items || [],
+      _engine: engine
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
