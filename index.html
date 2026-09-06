@@ -920,6 +920,7 @@
     // Scanner state
     let scannedItems = [];
     let currentDownsampledImage = null;
+    let selectedScannerFile = null;
 
     // Pagination state
     let currentPage = 1;
@@ -2239,8 +2240,9 @@
     // 7. TASK 3 & 4: AI SUPPLIER VISION SCANNER & STAGED REVIEW DRAWER
     // ==============================================================
 
-    // Task 3: Client-Side Canvas Downsampling (1600x1600 @ 0.82 JPEG)
-    function downsampleImage(file, maxDimension = 1600, quality = 0.82) {
+    // Directive: SYSTEM_OPTIMIZATION_PHASE_1_CLIENT_COMPRESSION
+    // Zero-dependency async helper: Offscreen Canvas downscaler/compressor
+    async function compressImage(file, maxDimension = 1600, quality = 0.82) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -2266,8 +2268,16 @@
             ctx.drawImage(img, 0, 0, width, height);
 
             const dataUrl = canvas.toDataURL("image/jpeg", quality);
-            const base64Data = dataUrl.split(",")[1];
-            resolve({ dataUrl, base64Data, width, height });
+            // Strip data:image/jpeg;base64, prefix
+            const base64Data = dataUrl.replace(/^data:image\/[a-z]+;base64,/, "");
+            resolve({
+              dataUrl,
+              base64Data,
+              base64: base64Data,
+              width,
+              height,
+              toString: () => base64Data
+            });
           };
           img.onerror = (err) => reject(err);
           img.src = e.target.result;
@@ -2276,6 +2286,9 @@
         reader.readAsDataURL(file);
       });
     }
+    window.compressImage = compressImage;
+    window.downsampleImage = compressImage;
+    const downsampleImage = compressImage;
 
     // Modal UI Handlers
     document.getElementById("btn-open-scanner").addEventListener("click", () => {
@@ -2326,10 +2339,11 @@
         showToast("Please select a valid image file.");
         return;
       }
+      selectedScannerFile = file;
 
       showToast("Compressing photo via Canvas (1600×1600 @ 0.82 JPEG)...");
       try {
-        const result = await downsampleImage(file, 1600, 0.82);
+        const result = await compressImage(file, 1600, 0.82);
         currentDownsampledImage = result;
 
         const previewImg = document.getElementById("scanner-preview-img");
@@ -2353,7 +2367,7 @@
 
     // Vision Scanner Call via Cloudflare Pages Function (/api/scan)
     document.getElementById("btn-analyze-photo").addEventListener("click", async () => {
-      if (!currentDownsampledImage || !currentDownsampledImage.base64Data) {
+      if (!selectedScannerFile && (!currentDownsampledImage || !currentDownsampledImage.base64Data)) {
         showToast("Please upload an image first.");
         return;
       }
@@ -2376,11 +2390,28 @@
       statusBox.appendChild(scanningMsg);
 
       try {
+        // Step 3: Await compressImage(selectedFile) pre-flight & pass stripped base64 payload
+        let strippedBase64;
+        if (selectedScannerFile) {
+          const compressed = await compressImage(selectedScannerFile, 1600, 0.82);
+          currentDownsampledImage = compressed;
+          strippedBase64 = typeof compressed === "string"
+            ? compressed.replace(/^data:image\/[a-z]+;base64,/, "")
+            : (compressed.base64Data || compressed.base64 || compressed.dataUrl?.replace(/^data:image\/[a-z]+;base64,/, ""));
+        } else {
+          strippedBase64 = currentDownsampledImage.base64Data || currentDownsampledImage.base64;
+        }
+
+        if (strippedBase64 && strippedBase64.includes(",")) {
+          strippedBase64 = strippedBase64.split(",")[1];
+        }
+        strippedBase64 = (strippedBase64 || "").replace(/^data:image\/[a-z]+;base64,/, "").trim();
+
         const response = await fetch("/api/scan", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            imageBase64: currentDownsampledImage.base64Data
+            imageBase64: strippedBase64
           })
         });
 
@@ -2723,6 +2754,7 @@
       closeScannerModal();
       scannedItems = [];
       currentDownsampledImage = null;
+      selectedScannerFile = null;
       document.getElementById("scanner-preview-container").classList.add("hidden");
       document.getElementById("scanner-upload-prompt").classList.remove("hidden");
       document.getElementById("scanner-results-section").classList.add("hidden");

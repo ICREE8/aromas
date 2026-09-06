@@ -1,13 +1,8 @@
-const SYSTEM_PROMPT = `You are a forensic luxury fragrance inventory specialist and OCR cataloguer.
-Your job is to inspect dense photographs of perfume boxes, bottles, and wholesale deliveries.
-CRITICAL SEGMENTATION RULES:
-1. Systematically scan row-by-row, from top-left to bottom-right across the ENTIRE frame.
-2. Identify EVERY distinct bottle or box visible, even if partially occluded or in the background.
-3. Actively search for and extract the stamped/embossed BATCH CODE or etching on each unit. If occluded, set batchCode to null.
-4. If multiple identical bottles of the same fragrance and size are sitting together, increment "qty".
-5. DO NOT estimate, predict, or guess retail prices or MSRP. Leave price fields completely out or null.
-6. Accurately identify concentration: EDP, EDT, Parfum, Extrait, or Cologne.
-Output a valid JSON object with keys: "total_boxes_detected" (integer) and "items" (array of objects with: name, brand, concentration, size, qty, batchCode, condition).`;
+const SYSTEM_PROMPT = `You are a fragrance inventory OCR system. You MUST respond with ONLY valid JSON, no markdown, no explanation, no extra text.`;
+
+const USER_PROMPT = `Analyze this photo of fragrance boxes/bottles. Return a JSON object with this exact structure:
+{"total_boxes_detected": <number>, "items": [{"name": "<fragrance name>", "brand": "<brand>", "concentration": "<EDP|EDT|Parfum|Extrait|Cologne>", "size": "<size>", "qty": <number>, "batchCode": "<code or null>", "condition": "<condition>"}]}
+Count every visible box/bottle. Do NOT guess prices. Respond with ONLY the JSON object.`;
 
 const GEMINI_RESPONSE_SCHEMA = {
   type: "OBJECT",
@@ -42,7 +37,7 @@ async function callGemini(imageBase64, apiKey) {
     body: JSON.stringify({
       contents: [{
         parts: [
-          { text: SYSTEM_PROMPT },
+          { text: SYSTEM_PROMPT + "\n" + USER_PROMPT },
           { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
         ]
       }],
@@ -63,23 +58,38 @@ async function callGemini(imageBase64, apiKey) {
 
 // ── Fallback: Cloudflare Workers AI (Llama 3.2 Vision) ──
 async function callWorkersAI(imageBase64, ai) {
-  const dataUri = `data:image/jpeg;base64,${imageBase64}`;
+  // Convert base64 string to Uint8Array (binary) — Workers AI expects raw bytes
+  const binaryStr = atob(imageBase64);
+  const imageArray = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    imageArray[i] = binaryStr.charCodeAt(i);
+  }
+
   const response = await ai.run("@cf/meta/llama-3.2-11b-vision-instruct", {
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: "Analyze this fragrance inventory photo. Return ONLY a valid JSON object with total_boxes_detected and items array." }
+      { role: "user", content: USER_PROMPT }
     ],
-    image: dataUri
+    image: [...imageArray]
   });
 
-  // Workers AI returns { response: "..." } — parse the JSON from the text
+  // Workers AI returns { response: "..." }
   const rawText = response?.response || "";
-  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error("Workers AI returned no parseable JSON");
+  if (!rawText) {
+    throw new Error("Workers AI returned empty response");
   }
 
-  const parsed = JSON.parse(jsonMatch[0]);
+  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error(`Workers AI non-JSON: ${rawText.substring(0, 300)}`);
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonMatch[0]);
+  } catch (e) {
+    throw new Error(`Workers AI JSON parse failed: ${rawText.substring(0, 300)}`);
+  }
 
   // Normalize into Gemini-compatible envelope so client code stays unchanged
   return {
@@ -95,12 +105,6 @@ async function callWorkersAI(imageBase64, ai) {
 // ── Handler ──
 export async function onRequestPost(context) {
   const apiKey = context.env?.GEMINI_API_KEY;
-  if (!apiKey) {
-    return new Response(
-      JSON.stringify({ error: "GEMINI_API_KEY not configured in Cloudflare Pages." }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
 
   try {
     const { imageBase64 } = await context.request.json();
@@ -114,34 +118,47 @@ export async function onRequestPost(context) {
     let data;
     let engine = "gemini-3.6-flash";
 
-    // ── Try Gemini first ──
-    try {
-      data = await callGemini(imageBase64, apiKey);
-    } catch (geminiErr) {
-      const status = geminiErr.message?.match(/GEMINI_FAIL:(\d+)/)?.[1];
-      const isRetryable = ["429", "500", "502", "503", "504", "524"].includes(status);
+    // ── Try Gemini first (if API key is configured) ──
+    if (apiKey) {
+      try {
+        data = await callGemini(imageBase64, apiKey);
+      } catch (geminiErr) {
+        const status = geminiErr.message?.match(/GEMINI_FAIL:(\d+)/)?.[1];
+        const isRetryable = ["429", "500", "502", "503", "504", "524"].includes(status);
 
-      // ── Failover to Workers AI if Gemini is throttled/down ──
-      if (isRetryable && context.env?.AI) {
-        try {
-          data = await callWorkersAI(imageBase64, context.env.AI);
-          engine = "cloudflare-workers-ai";
-        } catch (fallbackErr) {
-          // Both engines failed — return Gemini's original error
+        if (isRetryable && context.env?.AI) {
+          // Gemini failed with retryable error — fall through to Workers AI
+          console.log(`Gemini failed (${status}), falling back to Workers AI`);
+        } else if (context.env?.AI) {
+          // Gemini failed with non-retryable error but we have AI binding — try anyway
+          console.log(`Gemini failed (${geminiErr.message}), attempting Workers AI`);
+        } else {
           return new Response(
-            JSON.stringify({
-              error: `Primary (Gemini): ${geminiErr.message}. Fallback (Workers AI): ${fallbackErr.message}`
-            }),
-            { status: 503, headers: { "Content-Type": "application/json" } }
+            JSON.stringify({ error: geminiErr.message }),
+            { status: parseInt(status) || 500, headers: { "Content-Type": "application/json" } }
           );
         }
-      } else {
-        // Non-retryable Gemini error or no AI binding
+      }
+    }
+
+    // ── Workers AI fallback (or primary if no Gemini key) ──
+    if (!data && context.env?.AI) {
+      try {
+        data = await callWorkersAI(imageBase64, context.env.AI);
+        engine = "cloudflare-workers-ai";
+      } catch (fallbackErr) {
         return new Response(
-          JSON.stringify({ error: geminiErr.message }),
-          { status: parseInt(status) || 500, headers: { "Content-Type": "application/json" } }
+          JSON.stringify({ error: `Workers AI failed: ${fallbackErr.message}` }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
         );
       }
+    }
+
+    if (!data) {
+      return new Response(
+        JSON.stringify({ error: "No AI engine available. Configure GEMINI_API_KEY or AI binding." }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(JSON.stringify({ ...data, _engine: engine }), {
