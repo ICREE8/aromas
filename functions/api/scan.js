@@ -79,7 +79,7 @@ Output a valid JSON object strictly adhering to the schema.`;
       }
     };
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     const apiRes = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
