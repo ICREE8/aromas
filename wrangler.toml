@@ -1,4 +1,5 @@
 # Cloudflare Pages configuration
+name = "aromas"
 pages_build_output_dir = "."
 
 # AI binding enables Workers AI fallback for scanner
