@@ -1,4 +1,6 @@
 # Cloudflare Pages configuration
+pages_build_output_dir = "."
+
 # AI binding enables Workers AI fallback for scanner
 [ai]
 binding = "AI"
