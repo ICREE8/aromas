@@ -1,0 +1,4 @@
+# Cloudflare Pages configuration
+# AI binding enables Workers AI fallback for scanner
+[ai]
+binding = "AI"
