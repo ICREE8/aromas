@@ -66,6 +66,79 @@
       transform: translateY(-1px);
     }
 
+    .kpi-accordion-grid {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 250ms ease;
+      opacity: 0;
+      overflow: hidden;
+    }
+    .kpi-accordion-grid.open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    .kpi-accordion-grid:not(.open) {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      border-top: none !important;
+    }
+    .kpi-accordion-grid:not(.open) * {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      border-top: none !important;
+    }
+    .kpi-accordion-inner {
+      overflow: hidden;
+    }
+    .kpi-card-animate {
+      transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease;
+      transform: translateY(8px);
+      opacity: 0;
+    }
+    .kpi-accordion-grid.open .kpi-card-animate {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .kpi-card-animate:nth-child(1) { transition-delay: 50ms; }
+    .kpi-card-animate:nth-child(2) { transition-delay: 95ms; }
+    .kpi-card-animate:nth-child(3) { transition-delay: 140ms; }
+    .kpi-card-animate:nth-child(4) { transition-delay: 185ms; }
+
+    .drawer-accordion-grid {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 250ms ease;
+      opacity: 0;
+      overflow: hidden;
+    }
+    .drawer-accordion-grid.open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    .drawer-accordion-grid:not(.open) {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      border-top: none !important;
+    }
+    .drawer-accordion-grid:not(.open) * {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      border-top: none !important;
+    }
+    .drawer-accordion-inner {
+      overflow: hidden;
+    }
+    .brand-bar-animate {
+      transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease;
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .kpi-accordion-grid.open .brand-bar-animate,
+    .drawer-accordion-grid.open .brand-bar-animate {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
     /* Executive Print Stylesheet for Sales Statement */
     @media print {
       @page {
@@ -229,116 +302,147 @@
   <!-- ========================================================= -->
   <main id="view-dashboard" class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6 flex-1">
 
-    <!-- 1. Headline 4 Financial & Inventory KPI Cards -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Total Units In-Stock (Sum of Qty for In Stock & Needs Price) -->
-      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">In-Stock Units</span>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/30">Units</span>
-        </div>
-        <div class="my-3 flex items-baseline gap-2">
-          <span id="metric-in-stock" class="text-3xl font-black text-white font-mono-num">0</span>
-          <span id="metric-sold" class="text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-            0 Sold
-          </span>
-        </div>
-        <div class="text-[11px] text-slate-400 flex items-center justify-between">
-          <span>Active inventory</span>
-          <span id="metric-total" class="text-slate-500 font-mono-num">0 Total</span>
-        </div>
+    <!-- 1. Headline 4 Financial & Inventory KPI Cards (Collapsible Drawer) -->
+    <div class="flex items-center justify-between py-2 px-1 mb-2 border-b border-slate-800">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-[10px] font-bold tracking-wider uppercase text-slate-400">Metrics</span>
+        <span id="kpi-summary-preview" class="text-slate-300 font-mono text-[11px] truncate">-- Units • $0.00</span>
       </div>
+      <button id="btn-toggle-kpi-deck" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/60 shadow-sm transition-all cursor-pointer">
+        <span id="kpi-toggle-text" class="text-[11px] font-medium">Show Deck</span>
+        <svg id="kpi-toggle-icon" class="w-3.5 h-3.5 transition-transform duration-300 ease-out text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+    </div>
 
-      <!-- Total Invested Cost -->
-      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Invested Cost</span>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 border border-sky-500/30">Cost</span>
-        </div>
-        <div class="my-3">
-          <span id="metric-cost" class="text-3xl font-black text-sky-400 font-mono-num">$0.00</span>
-        </div>
-        <p class="text-[11px] text-slate-400">Total invested (In-Stock × Unit Cost)</p>
-      </div>
+    <div id="kpi-accordion" class="kpi-accordion-grid">
+      <div class="kpi-accordion-inner">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1 pb-3">
+          <!-- Total Units In-Stock (Sum of Qty for In Stock & Needs Price) -->
+          <div class="kpi-card-animate bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">In-Stock Units</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/30">Units</span>
+            </div>
+            <div class="my-2.5 sm:my-3">
+              <span id="metric-in-stock" class="text-2xl sm:text-3xl font-black text-white font-mono-num">0</span>
+            </div>
+            <div class="text-[11px] text-slate-400 flex items-center justify-between">
+              <span>Active inventory</span>
+              <span id="metric-total" class="text-slate-500 font-mono-num">0 Total</span>
+            </div>
+          </div>
 
-      <!-- Listed Revenue Value -->
-      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Listed Revenue</span>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Revenue</span>
-        </div>
-        <div class="my-3">
-          <span id="metric-listed" class="text-3xl font-black text-emerald-400 font-mono-num">$0.00</span>
-        </div>
-        <p class="text-[11px] text-slate-400">Expected return (In-Stock × List)</p>
-      </div>
+          <!-- Total Invested Cost -->
+          <div class="kpi-card-animate bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Invested Cost</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 border border-sky-500/30">Cost</span>
+            </div>
+            <div class="my-2.5 sm:my-3">
+              <span id="metric-cost" class="text-2xl sm:text-3xl font-black text-sky-400 font-mono-num">$0.00</span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate">Total invested (In-Stock × Unit Cost)</p>
+          </div>
 
-      <!-- Gross Margin -->
-      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Gross Margin</span>
-          <span id="metric-margin-pct" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30">
-            0.0% Margin
-          </span>
-        </div>
-        <div class="my-3">
-          <span id="metric-margin" class="text-3xl font-black text-teal-300 font-mono-num">$0.00</span>
-        </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-400">
-          <span>Unrealized profit</span>
-          <span id="metric-realized-profit" class="font-bold text-emerald-400 font-mono-num" title="Realized Net Cash Profit from Sold items">+$0.00 Realized</span>
+          <!-- Listed Revenue Value -->
+          <div class="kpi-card-animate bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Listed Revenue</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Revenue</span>
+            </div>
+            <div class="my-2.5 sm:my-3">
+              <span id="metric-listed" class="text-2xl sm:text-3xl font-black text-emerald-400 font-mono-num">$0.00</span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate">Expected return (In-Stock × List)</p>
+          </div>
+
+          <!-- Gross Margin -->
+          <div class="kpi-card-animate bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Gross Margin</span>
+              <span id="metric-margin-pct" class="text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                0.0% Margin
+              </span>
+            </div>
+            <div class="my-2.5 sm:my-3">
+              <span id="metric-margin" class="text-2xl sm:text-3xl font-black text-teal-300 font-mono-num">$0.00</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span>Unrealized</span>
+              <span id="metric-realized-profit" class="font-bold text-emerald-400 font-mono-num truncate" title="Realized Net Cash Profit from Sold items">+$0.00 Realized</span>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
 
     <!-- 2. Analytics Row -->
-    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-      <!-- Brand Distribution -->
-      <div class="lg:col-span-8 bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 sm:p-6 flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">Brand Value Distribution</h3>
-            <p class="text-xs text-slate-400">Total dollar value breakdown per fragrance designer</p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-4">
+      <!-- Brand Exposure (Col 1-2) -->
+      <div class="lg:col-span-2 rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400">Brand Exposure</span>
+            <span id="brand-summary-preview" class="text-slate-300 font-mono text-[11px] truncate"></span>
           </div>
-          <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700">
-            By Listed $
-          </span>
+          <button id="btn-toggle-brands" type="button" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 text-[11px] font-medium transition-all cursor-pointer">
+            <span id="brand-toggle-text">Show Brands</span>
+            <svg id="brand-toggle-icon" class="w-3.5 h-3.5 text-emerald-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
         </div>
-        <div id="brand-bars-container" class="space-y-3 pt-2"></div>
-      </div>
-
-      <!-- Concentration & Condition Split -->
-      <div class="lg:col-span-4 bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 sm:p-6 flex flex-col justify-between shadow-sm">
-        <div>
-          <h3 class="text-sm sm:text-base font-bold text-white tracking-tight">Concentration & Condition</h3>
-          <p class="text-xs text-slate-400 mb-4">Distribution by strength and packaging</p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 mb-4">
-          <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-center">
-            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">EDP</span>
-            <span id="conc-edp" class="text-2xl font-black text-emerald-400 font-mono-num">0</span>
+        <div id="brand-accordion" class="kpi-accordion-grid">
+          <div class="kpi-accordion-inner pt-3 border-t border-slate-800 mt-3">
+            <div id="brand-distribution-list" class="space-y-2"></div>
           </div>
-          <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-center">
-            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">EDT</span>
-            <span id="conc-edt" class="text-2xl font-black text-purple-400 font-mono-num">0</span>
-          </div>
-          <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-center">
-            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">PARFUM</span>
-            <span id="conc-parfum" class="text-2xl font-black text-amber-400 font-mono-num">0</span>
-          </div>
-          <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 text-center">
-            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">OTHER</span>
-            <span id="conc-other" class="text-2xl font-black text-sky-400 font-mono-num">0</span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between p-3 bg-[#0d1424] rounded-xl border border-slate-800/80 text-xs">
-          <span>New Sealed: <strong id="condition-sealed" class="text-emerald-400 font-mono-num">0</strong></span>
-          <span>Testers / Specials: <strong id="condition-testers" class="text-sky-400 font-mono-num">0</strong></span>
         </div>
       </div>
-    </section>
+
+      <!-- Concentration & Condition (Col 3) -->
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400">Condition</span>
+            <span id="concentration-summary-preview" class="text-slate-300 font-mono text-[11px] truncate"></span>
+          </div>
+          <button id="btn-toggle-concentration" type="button" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 text-[11px] font-medium transition-all cursor-pointer">
+            <span id="concentration-toggle-text">Show Breakdown</span>
+            <svg id="concentration-toggle-icon" class="w-3.5 h-3.5 text-emerald-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+        </div>
+        <div id="concentration-accordion" class="kpi-accordion-grid">
+          <div class="kpi-accordion-inner pt-3 border-t border-slate-800 mt-3">
+            <div class="grid grid-cols-2 gap-2 mb-2.5">
+              <div class="bg-slate-900/80 p-2 rounded border border-slate-800 text-center">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">EDP</span>
+                <span id="conc-edp" class="text-lg font-black text-emerald-400 font-mono-num">0</span>
+              </div>
+              <div class="bg-slate-900/80 p-2 rounded border border-slate-800 text-center">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">EDT</span>
+                <span id="conc-edt" class="text-lg font-black text-purple-400 font-mono-num">0</span>
+              </div>
+              <div class="bg-slate-900/80 p-2 rounded border border-slate-800 text-center">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">PARFUM</span>
+                <span id="conc-parfum" class="text-lg font-black text-amber-400 font-mono-num">0</span>
+              </div>
+              <div class="bg-slate-900/80 p-2 rounded border border-slate-800 text-center">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">OTHER</span>
+                <span id="conc-other" class="text-lg font-black text-sky-400 font-mono-num">0</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-2 bg-[#0d1424] rounded border border-slate-800/80 text-xs">
+              <span>New Sealed: <strong id="condition-sealed" class="text-emerald-400 font-mono-num">0</strong></span>
+              <span>Testers: <strong id="condition-testers" class="text-sky-400 font-mono-num">0</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Task 1: Positioned Action Toolbar Directly ABOVE Search & Filter -->
     <section id="action-toolbar" class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
@@ -442,12 +546,27 @@
       <div>
         Showing <strong id="label-shown-count" class="text-white font-mono-num">0</strong> of <strong id="label-total-count" class="text-white font-mono-num">0</strong> bottles
       </div>
-      <div id="ribbon-financial-summary" class="flex flex-wrap items-center gap-3 text-[11px]">
-        <span>Total Cost: <strong id="ribbon-total-cost" class="text-sky-400 font-mono-num">$0.00</strong></span>
-        <span class="text-slate-600">•</span>
-        <span>Listed Value: <strong id="ribbon-total-listed" class="text-emerald-400 font-mono-num">$0.00</strong></span>
-        <span class="text-slate-600">•</span>
-        <span>Unrealized Margin: <strong id="ribbon-total-margin" class="text-teal-300 font-mono-num">$0.00</strong></span>
+      <div id="ribbon-financial-summary" class="flex items-center gap-2 ml-auto">
+        <!-- Collapsible Content (Starts closed) -->
+        <div id="financial-ribbon-content" class="hidden flex-wrap items-center gap-2.5 text-[11px] bg-slate-900/80 border border-slate-800 px-3 py-1 rounded-lg">
+          <span id="metric-sold" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
+            0 Sold
+          </span>
+          <span class="text-slate-600">•</span>
+          <span>Total Cost: <strong id="ribbon-total-cost" class="text-sky-400 font-mono-num">$0.00</strong></span>
+          <span class="text-slate-600">•</span>
+          <span>Listed Value: <strong id="ribbon-total-listed" class="text-emerald-400 font-mono-num">$0.00</strong></span>
+          <span class="text-slate-600">•</span>
+          <span>Unrealized Margin: <strong id="ribbon-total-margin" class="text-teal-300 font-mono-num">$0.00</strong></span>
+        </div>
+
+        <!-- Toggle Button with Chevron Arrow -->
+        <button id="btn-toggle-financials" type="button" class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors bg-slate-900/60 hover:bg-slate-800 border border-slate-800 px-2.5 py-1 rounded-lg cursor-pointer select-none">
+          <span class="text-[11px] font-medium">Financials</span>
+          <svg id="icon-toggle-financials" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -1780,9 +1899,10 @@
           concMap.Other += q;
         }
 
-        const b = item.brand || "Other";
-        if (item.status === "In Stock" || item.status === "Needs Listing") {
-          brandMap[b] = (brandMap[b] || 0) + (list * q);
+        const b = (item.brand && String(item.brand).trim() !== "") ? String(item.brand).trim() : "Other";
+        if (item.status !== "Sold") {
+          const itemVal = list > 0 ? (list * q) : ((Number(item.cost) > 0 ? Number(item.cost) : 1) * q);
+          brandMap[b] = (brandMap[b] || 0) + itemVal;
         }
       });
 
@@ -1802,6 +1922,11 @@
 
       // Dynamic KPI Math Updates
       document.getElementById("metric-in-stock").textContent = totalUnitsInStock;
+      
+      const kpiPreview = document.getElementById("kpi-summary-preview");
+      if (kpiPreview) {
+        kpiPreview.textContent = `${totalUnitsInStock} Units • ${formatMoney(listedSum)}`;
+      }
       
       const soldEl = document.getElementById("metric-sold");
       if (soldEl) {
@@ -1862,49 +1987,77 @@
       document.getElementById("condition-sealed").textContent = newSealedCount;
       document.getElementById("condition-testers").textContent = testersCount;
 
+      const concPreview = document.getElementById("concentration-summary-preview");
+      if (concPreview) {
+        concPreview.textContent = `EDP: ${concMap.EDP} • EDT: ${concMap.EDT} • Sealed: ${newSealedCount}`;
+      }
+
       // Brand bars distribution
-      const brandEntries = Object.entries(brandMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
-      const brandContainer = document.getElementById("brand-bars-container");
-      brandContainer.replaceChildren();
+      const allBrandEntries = Object.entries(brandMap).sort((a, b) => b[1] - a[1]);
+      const brandEntries = allBrandEntries.slice(0, 6);
+      const brandContainer = document.getElementById("brand-distribution-list") || document.getElementById("brand-bars-container");
 
-      if (brandEntries.length === 0) {
-        const emptyDiv = document.createElement("div");
-        emptyDiv.className = "text-xs text-slate-500 py-6 text-center";
-        emptyDiv.textContent = "No priced in-stock inventory items to display distribution.";
-        brandContainer.appendChild(emptyDiv);
-      } else {
-        const maxVal = brandEntries[0][1] || 1;
-        brandEntries.forEach(([brand, val]) => {
-          const pct = Math.round((val / maxVal) * 100);
+      // Brand summary preview in accordion control bar
+      const totalBrands = allBrandEntries.length;
+      const totalBrandValue = allBrandEntries.reduce((sum, [, val]) => sum + val, 0);
+      const brandPreview = document.getElementById("brand-summary-preview");
+      if (brandPreview) {
+        if (allBrandEntries.length > 0 && totalBrandValue > 0) {
+          const topBrandName = allBrandEntries[0][0];
+          const topBrandPct = Math.round((allBrandEntries[0][1] / totalBrandValue) * 100);
+          brandPreview.textContent = `Top: ${topBrandName} (${topBrandPct}%) • ${totalBrands} Brands`;
+        } else if (allBrandEntries.length > 0) {
+          const topBrandName = allBrandEntries[0][0];
+          brandPreview.textContent = `Top: ${topBrandName} • ${totalBrands} Brands`;
+        } else {
+          brandPreview.textContent = "0 Brands";
+        }
+      }
 
-          const itemDiv = document.createElement("div");
-          const labelRow = document.createElement("div");
-          labelRow.className = "flex justify-between text-xs mb-1";
-          
-          const brandSpan = document.createElement("span");
-          brandSpan.className = "font-semibold text-slate-200";
-          brandSpan.textContent = brand;
+      if (brandContainer) {
+        brandContainer.replaceChildren();
+        if (brandEntries.length === 0) {
+          const emptyDiv = document.createElement("div");
+          emptyDiv.className = "text-xs text-slate-500 py-4 text-center";
+          emptyDiv.textContent = "No in-stock inventory items to display distribution.";
+          brandContainer.appendChild(emptyDiv);
+        } else {
+          const maxVal = brandEntries[0][1] > 0 ? brandEntries[0][1] : 1;
+          brandEntries.forEach(([brand, val], index) => {
+            const pct = Math.max(8, Math.round((val / maxVal) * 100));
 
-          const valSpan = document.createElement("span");
-          valSpan.className = "font-bold text-emerald-400 font-mono-num";
-          valSpan.textContent = formatMoney(val);
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "brand-bar-animate";
+            itemDiv.style.transitionDelay = `${index * 35}ms`;
 
-          labelRow.appendChild(brandSpan);
-          labelRow.appendChild(valSpan);
+            const labelRow = document.createElement("div");
+            labelRow.className = "flex justify-between text-xs mb-1";
+            
+            const brandSpan = document.createElement("span");
+            brandSpan.className = "font-semibold text-slate-200 truncate";
+            brandSpan.textContent = brand;
 
-          const barBg = document.createElement("div");
-          barBg.className = "w-full h-2 bg-slate-800 rounded-full overflow-hidden";
-          
-          const barFill = document.createElement("div");
-          barFill.className = "h-full bg-emerald-500 rounded-full";
-          barFill.style.width = `${pct}%`;
+            const valSpan = document.createElement("span");
+            valSpan.className = "font-bold text-emerald-400 font-mono-num ml-2 shrink-0";
+            valSpan.textContent = formatMoney(val);
 
-          barBg.appendChild(barFill);
-          itemDiv.appendChild(labelRow);
-          itemDiv.appendChild(barBg);
+            labelRow.appendChild(brandSpan);
+            labelRow.appendChild(valSpan);
 
-          brandContainer.appendChild(itemDiv);
-        });
+            const barBg = document.createElement("div");
+            barBg.className = "w-full h-2 bg-slate-800 rounded-full overflow-hidden";
+            
+            const barFill = document.createElement("div");
+            barFill.className = "h-full bg-emerald-500 rounded-full transition-all duration-500";
+            barFill.style.width = `${pct}%`;
+
+            barBg.appendChild(barFill);
+            itemDiv.appendChild(labelRow);
+            itemDiv.appendChild(barBg);
+
+            brandContainer.appendChild(itemDiv);
+          });
+        }
       }
 
       // Brand select dropdown
@@ -5054,6 +5207,128 @@ ${desc}`;
     document.getElementById("btn-apply-custom-dates")?.addEventListener("click", () => {
       renderSalesStatement();
     });
+
+    // Toggle Financial Summary Ribbon Drawer
+    document.getElementById("btn-toggle-financials")?.addEventListener("click", () => {
+      const content = document.getElementById("financial-ribbon-content");
+      const icon = document.getElementById("icon-toggle-financials");
+      if (!content) return;
+      const isHidden = content.classList.contains("hidden");
+      if (isHidden) {
+        content.classList.remove("hidden");
+        content.classList.add("flex");
+        icon?.classList.add("rotate-180");
+      } else {
+        content.classList.add("hidden");
+        content.classList.remove("flex");
+        icon?.classList.remove("rotate-180");
+      }
+    });
+
+    // Toggle Headline KPI Metric Deck Accordion
+    const kpiAccordion = document.getElementById("kpi-accordion");
+    const btnToggleKpi = document.getElementById("btn-toggle-kpi-deck");
+    const kpiToggleText = document.getElementById("kpi-toggle-text");
+    const kpiToggleIcon = document.getElementById("kpi-toggle-icon");
+
+    function setKpiDeckState(isOpen) {
+      if (!kpiAccordion) return;
+      if (isOpen) {
+        kpiAccordion.classList.add("open");
+        kpiToggleIcon?.classList.add("rotate-180");
+        if (kpiToggleText) kpiToggleText.textContent = "Hide Deck";
+      } else {
+        kpiAccordion.classList.remove("open");
+        kpiToggleIcon?.classList.remove("rotate-180");
+        if (kpiToggleText) kpiToggleText.textContent = "Show Deck";
+      }
+      try {
+        localStorage.setItem("vault_kpi_open", isOpen ? "true" : "false");
+      } catch (e) {}
+    }
+
+    btnToggleKpi?.addEventListener("click", () => {
+      const isCurrentlyOpen = kpiAccordion?.classList.contains("open");
+      setKpiDeckState(!isCurrentlyOpen);
+    });
+
+    // Initialize state from localStorage (default closed)
+    try {
+      const savedKpiState = localStorage.getItem("vault_kpi_open") === "true";
+      setKpiDeckState(savedKpiState);
+    } catch (e) {
+      setKpiDeckState(false);
+    }
+
+    // Toggle Brand Distribution Accordion Drawer
+    const brandAccordion = document.getElementById("brand-accordion");
+    const btnToggleBrands = document.getElementById("btn-toggle-brands");
+    const brandToggleText = document.getElementById("brand-toggle-text");
+    const brandToggleIcon = document.getElementById("brand-toggle-icon");
+
+    function setBrandDrawerState(isOpen) {
+      if (!brandAccordion) return;
+      if (isOpen) {
+        brandAccordion.classList.add("open");
+        brandToggleIcon?.classList.add("rotate-180");
+        if (brandToggleText) brandToggleText.textContent = "Hide Brands";
+      } else {
+        brandAccordion.classList.remove("open");
+        brandToggleIcon?.classList.remove("rotate-180");
+        if (brandToggleText) brandToggleText.textContent = "Show Brands";
+      }
+      try {
+        localStorage.setItem("vault_brands_open", isOpen ? "true" : "false");
+      } catch (e) {}
+    }
+
+    btnToggleBrands?.addEventListener("click", () => {
+      const isCurrentlyOpen = brandAccordion?.classList.contains("open");
+      setBrandDrawerState(!isCurrentlyOpen);
+    });
+
+    // Initialize state from localStorage (default closed)
+    try {
+      const savedBrandState = localStorage.getItem("vault_brands_open") === "true";
+      setBrandDrawerState(savedBrandState);
+    } catch (e) {
+      setBrandDrawerState(false);
+    }
+
+    // Toggle Concentration & Condition Accordion Drawer
+    const concAccordion = document.getElementById("concentration-accordion");
+    const btnToggleConc = document.getElementById("btn-toggle-concentration");
+    const concToggleText = document.getElementById("concentration-toggle-text");
+    const concToggleIcon = document.getElementById("concentration-toggle-icon");
+
+    function setConcentrationDrawerState(isOpen) {
+      if (!concAccordion) return;
+      if (isOpen) {
+        concAccordion.classList.add("open");
+        concToggleIcon?.classList.add("rotate-180");
+        if (concToggleText) concToggleText.textContent = "Hide Breakdown";
+      } else {
+        concAccordion.classList.remove("open");
+        concToggleIcon?.classList.remove("rotate-180");
+        if (concToggleText) concToggleText.textContent = "Show Breakdown";
+      }
+      try {
+        localStorage.setItem("vault_concentration_open", isOpen ? "true" : "false");
+      } catch (e) {}
+    }
+
+    btnToggleConc?.addEventListener("click", () => {
+      const isCurrentlyOpen = concAccordion?.classList.contains("open");
+      setConcentrationDrawerState(!isCurrentlyOpen);
+    });
+
+    // Initialize state from localStorage (default closed)
+    try {
+      const savedConcState = localStorage.getItem("vault_concentration_open") === "true";
+      setConcentrationDrawerState(savedConcState);
+    } catch (e) {
+      setConcentrationDrawerState(false);
+    }
 
     // Check active session on boot
     checkSession();
