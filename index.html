@@ -65,6 +65,82 @@
       box-shadow: 0 0 20px rgba(236, 72, 153, 0.4);
       transform: translateY(-1px);
     }
+
+    /* Executive Print Stylesheet for Sales Statement */
+    @media print {
+      @page {
+        margin: 15mm;
+        size: auto;
+      }
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+      header,
+      #view-login,
+      #view-dashboard,
+      #toast-container,
+      #modal-import,
+      #modal-bottle,
+      #modal-scanner,
+      #modal-listing-studio,
+      #modal-barcode-scanner,
+      .no-print {
+        display: none !important;
+      }
+      #modal-sales-sheet {
+        position: static !important;
+        display: block !important;
+        background: transparent !important;
+        padding: 0 !important;
+        inset: auto !important;
+        z-index: auto !important;
+      }
+      #modal-sales-sheet > div {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+      }
+      #modal-sales-sheet .print-clean-bg {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+      }
+      #modal-sales-sheet h2,
+      #modal-sales-sheet h3,
+      #modal-sales-sheet p,
+      #modal-sales-sheet span,
+      #modal-sales-sheet strong,
+      #modal-sales-sheet td,
+      #modal-sales-sheet th {
+        color: #0f172a !important;
+      }
+      #modal-sales-sheet table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+      }
+      #modal-sales-sheet th,
+      #modal-sales-sheet td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 10px !important;
+        background: transparent !important;
+        color: #0f172a !important;
+      }
+      #modal-sales-sheet th {
+        background: #f1f5f9 !important;
+        font-weight: 700 !important;
+      }
+      #modal-sales-sheet .no-print,
+      #btn-close-sales-sheet,
+      #btn-print-sales-statement,
+      #sales-timeframe-controls {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
@@ -288,6 +364,13 @@
           </svg>
           Export CSV
         </button>
+
+        <button id="btn-open-sales-sheet" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/60 shadow-sm transition-all cursor-pointer">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span>Sales Statement</span>
+        </button>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5">
@@ -365,12 +448,6 @@
         <span>Listed Value: <strong id="ribbon-total-listed" class="text-emerald-400 font-mono-num">$0.00</strong></span>
         <span class="text-slate-600">•</span>
         <span>Unrealized Margin: <strong id="ribbon-total-margin" class="text-teal-300 font-mono-num">$0.00</strong></span>
-        <span class="text-slate-600">•</span>
-        <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-medium flex items-center gap-1">
-          <span>💰 Realized Net Profit:</span>
-          <strong id="ribbon-realized-profit" class="font-bold text-emerald-400 font-mono-num">$0.00</strong>
-          <span id="ribbon-realized-detail" class="text-[10px] text-emerald-400/80 font-mono">(0 sold: $0.00 rev - $0.00 cost)</span>
-        </span>
       </div>
     </div>
 
@@ -421,6 +498,115 @@
       </div>
     </section>
   </main>
+
+  <!-- MODAL: Sales Statement & Ledger -->
+  <div id="modal-sales-sheet" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-[#111827] border border-slate-800 w-full max-w-5xl rounded-2xl p-6 shadow-2xl space-y-5 my-auto max-h-[90vh] flex flex-col">
+      
+      <!-- Modal Header (Controls & Print Button) -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-base">
+            📊
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-white tracking-tight">
+              Aromas Vault — Sales Statement
+            </h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-print-sales-statement" type="button" onclick="window.print()" class="no-print flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-sm transition-all cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            <span>Print</span>
+          </button>
+          <button id="btn-close-sales-sheet" type="button" class="no-print text-slate-400 hover:text-white p-1.5 text-base rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">✕</button>
+        </div>
+      </div>
+
+      <!-- Timeframe Filter Controls (Hidden in Print) -->
+      <div id="sales-timeframe-controls" class="no-print flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 border border-slate-800/80 px-3 py-2 rounded-lg shrink-0">
+        <div class="flex items-center gap-2">
+          <label for="sales-period-select" class="text-xs font-medium text-slate-400">Period:</label>
+          <select id="sales-period-select" class="px-2.5 py-1 bg-slate-800 border border-slate-700 rounded-md text-white text-xs font-medium focus:outline-none focus:border-emerald-500">
+            <option value="THIS_MONTH">This Month</option>
+            <option value="LAST_MONTH">Last Month</option>
+            <option value="LAST_30_DAYS" selected>Last 30 Days</option>
+            <option value="LAST_60_DAYS">Last 60 Days</option>
+            <option value="YTD">This Year (YTD)</option>
+            <option value="ALL_TIME">All Time</option>
+            <option value="CUSTOM">Custom Range</option>
+          </select>
+        </div>
+
+        <!-- Custom Date Range Inputs (shown when Custom Range selected) -->
+        <div id="sales-custom-dates" class="hidden flex items-center gap-2">
+          <span class="text-xs text-slate-400">From:</span>
+          <input type="date" id="sales-date-from" class="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-md text-white text-xs focus:outline-none focus:border-emerald-500">
+          <span class="text-xs text-slate-400">To:</span>
+          <input type="date" id="sales-date-to" class="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-md text-white text-xs focus:outline-none focus:border-emerald-500">
+          <button id="btn-apply-custom-dates" type="button" class="px-2.5 py-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-md text-xs cursor-pointer">Apply</button>
+        </div>
+      </div>
+
+      <!-- Top Financial Statement Summary KPI Ribbon (4 Sharp Minimalist Metrics) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
+        <div class="print-clean-bg bg-slate-900/90 border border-slate-800 px-4 py-3 rounded-xl flex flex-col justify-between">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Units Sold</span>
+          <span id="statement-units-sold" class="text-xl sm:text-2xl font-bold text-white font-mono-num mt-1">0</span>
+        </div>
+        <div class="print-clean-bg bg-slate-900/90 border border-slate-800 px-4 py-3 rounded-xl flex flex-col justify-between">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Realized Revenue</span>
+          <span id="statement-realized-rev" class="text-xl sm:text-2xl font-bold text-emerald-400 font-mono-num mt-1">$0.00</span>
+        </div>
+        <div class="print-clean-bg bg-slate-900/90 border border-slate-800 px-4 py-3 rounded-xl flex flex-col justify-between">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Realized Cost</span>
+          <span id="statement-realized-cogs" class="text-xl sm:text-2xl font-bold text-sky-400 font-mono-num mt-1">$0.00</span>
+        </div>
+        <div class="print-clean-bg bg-slate-900/90 border border-slate-800 px-4 py-3 rounded-xl flex flex-col justify-between">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Profit</span>
+          <div class="flex items-baseline mt-1">
+            <span id="statement-net-profit" class="text-xl sm:text-2xl font-bold text-teal-300 font-mono-num">$0.00</span>
+            <span id="statement-net-margin" class="text-xs font-semibold ml-2 text-emerald-400 font-mono-num">(0.0%)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Itemized Ledger Table -->
+      <div class="flex-1 overflow-y-auto border border-slate-800 rounded-xl bg-slate-950/50 min-h-[220px]">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead class="sticky top-0 bg-[#0d1424] border-b border-slate-800 z-10">
+            <tr class="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+              <th class="py-2.5 px-3">Date</th>
+              <th class="py-2.5 px-3">Brand</th>
+              <th class="py-2.5 px-3">Fragrance Name</th>
+              <th class="py-2.5 px-3">Size / Type</th>
+              <th class="py-2.5 px-3 text-right">Unit Cost</th>
+              <th class="py-2.5 px-3 text-right">Sold Price</th>
+              <th class="py-2.5 px-3 text-right">Net Profit ($ / %)</th>
+            </tr>
+          </thead>
+          <tbody id="statement-table-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+            <tr>
+              <td colspan="7" class="py-8 text-center text-slate-500 font-sans text-xs">
+                No sales transactions recorded.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-500 shrink-0">
+        <span id="statement-footer-summary">0 transactions recorded</span>
+        <button id="btn-close-sales-sheet-bottom" type="button" class="no-print px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">Close</button>
+      </div>
+
+    </div>
+  </div>
 
   <!-- MODAL: Import from Google Sheet -->
   <div id="modal-import" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -947,6 +1133,7 @@
     // ==============================================================
     window.sbClient = null;
     let items = [];
+    let salesLedger = [];
     let currentUser = null;
     let authMode = "signin";
 
@@ -1219,6 +1406,49 @@
       }
       currentUser = user;
 
+      // Seed sample sales ledger records in dev mode if empty
+      if (user.id.startsWith("dev-") && salesLedger.length === 0) {
+        const now = new Date();
+        const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
+        const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString();
+        const thirtyFiveDaysAgo = new Date(now.getFullYear(), now.getMonth() - 1, 15).toISOString();
+        salesLedger = [
+          {
+            id: "sale-sample-1",
+            bottle_id: "ARM-SAMPLE-1",
+            brand: "Creed",
+            name: "Aventus",
+            concentration: "Eau de Parfum",
+            size: "100ml / 3.3oz",
+            cost: 160.00,
+            sold_price: 295.00,
+            sold_at: twoDaysAgo
+          },
+          {
+            id: "sale-sample-2",
+            bottle_id: "ARM-SAMPLE-2",
+            brand: "Maison Francis Kurkdjian",
+            name: "Baccarat Rouge 540",
+            concentration: "Extrait de Parfum",
+            size: "70ml / 2.4oz",
+            cost: 195.00,
+            sold_price: 345.00,
+            sold_at: fiveDaysAgo
+          },
+          {
+            id: "sale-sample-3",
+            bottle_id: "ARM-SAMPLE-3",
+            brand: "Tom Ford",
+            name: "Tobacco Vanille",
+            concentration: "Eau de Parfum",
+            size: "50ml / 1.7oz",
+            cost: 110.00,
+            sold_price: 215.00,
+            sold_at: thirtyFiveDaysAgo
+          }
+        ];
+      }
+
       document.getElementById("view-login")?.classList.add("hidden");
       document.getElementById("view-dashboard")?.classList.remove("hidden");
       document.getElementById("header-actions")?.classList.remove("hidden");
@@ -1239,6 +1469,7 @@
     function setLoggedOutState() {
       currentUser = null;
       items = [];
+      salesLedger = [];
       document.getElementById("view-login")?.classList.remove("hidden");
       document.getElementById("view-dashboard")?.classList.add("hidden");
       document.getElementById("header-actions")?.classList.add("hidden");
@@ -1414,9 +1645,43 @@
           }
         }
 
+        // Fetch historical sales from sales_ledger
+        if (window.sbClient && currentUser) {
+          try {
+            const { data: ledgerData, error: ledgerErr } = await window.sbClient
+              .from("sales_ledger")
+              .select("*")
+              .order("sold_at", { ascending: false });
+            if (!ledgerErr && Array.isArray(ledgerData)) {
+              salesLedger = ledgerData;
+            }
+          } catch (e) {
+            console.warn("fetchSalesLedger notice:", e);
+          }
+        }
+
         renderDashboard();
       } catch (err) {
         console.error("fetchInventory error:", err);
+      }
+    }
+
+    async function fetchSalesLedger() {
+      if (!window.sbClient || !currentUser) return;
+      try {
+        const { data, error } = await window.sbClient
+          .from("sales_ledger")
+          .select("*")
+          .order("sold_at", { ascending: false });
+        if (!error && Array.isArray(data)) {
+          salesLedger = data;
+          renderDashboard();
+          if (!document.getElementById("modal-sales-sheet")?.classList.contains("hidden")) {
+            renderSalesStatement();
+          }
+        }
+      } catch (e) {
+        console.warn("fetchSalesLedger notice:", e);
       }
     }
 
@@ -1430,6 +1695,17 @@
             { event: "*", schema: "public", table: "inventory" },
             () => {
               fetchInventory();
+            }
+          )
+          .subscribe();
+
+        window.sbClient
+          .channel("realtime-sales-sync")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "sales_ledger" },
+            async () => {
+              await fetchSalesLedger();
             }
           )
           .subscribe();
@@ -1510,6 +1786,13 @@
         }
       });
 
+      // Decoupled Realized Cash Profits: If salesLedger has records, use immutable ledger totals
+      if (salesLedger && salesLedger.length > 0) {
+        soldUnits = salesLedger.length;
+        soldRevenue = salesLedger.reduce((sum, r) => sum + Number(r.sold_price || 0), 0);
+        soldCost = salesLedger.reduce((sum, r) => sum + Number(r.cost || 0), 0);
+      }
+
       const realizedProfit = soldRevenue - soldCost;
       const realizedMarginPct = soldRevenue > 0 ? (realizedProfit / soldRevenue) * 100 : 0;
       const savings = Math.max(0, msrpSum - listedSum);
@@ -1560,15 +1843,6 @@
       if (ribbonListed) ribbonListed.textContent = formatMoney(listedSum);
       const ribbonMargin = document.getElementById("ribbon-total-margin");
       if (ribbonMargin) ribbonMargin.textContent = formatMoney(grossMargin);
-
-      const ribbonRealizedProfit = document.getElementById("ribbon-realized-profit");
-      if (ribbonRealizedProfit) {
-        ribbonRealizedProfit.textContent = `${realizedProfit >= 0 ? '+' : ''}${formatMoney(realizedProfit)}`;
-      }
-      const ribbonRealizedDetail = document.getElementById("ribbon-realized-detail");
-      if (ribbonRealizedDetail) {
-        ribbonRealizedDetail.textContent = `(${soldUnits} sold: ${formatMoney(soldRevenue)} rev - ${formatMoney(soldCost)} cost)`;
-      }
 
       // Task 1 & 2: Quick Filter Pill Count Updates
       const needsPricePillCount = document.getElementById("count-needs-price");
@@ -1679,32 +1953,109 @@
       renderTable();
     };
 
+    // ==============================================================
+    // Task 1: Immutable Sales Ledger Recorder
+    // ==============================================================
+    window.recordSale = async function(item, qtySold = 1) {
+      if (!item || qtySold <= 0) return;
+      const count = Math.max(1, parseInt(qtySold, 10) || 1);
+
+      const unitCost = (item.cost !== null && item.cost !== undefined && !isNaN(item.cost)) ? Number(item.cost) : 0;
+      const soldPrice = (item.listedPrice !== null && item.listedPrice !== undefined && !isNaN(item.listedPrice)) ? Number(item.listedPrice) : 0;
+      const bottleId = item.id || ('dev-' + Date.now());
+      const brand = item.brand || 'Unknown Brand';
+      const name = item.name || 'Untitled Fragrance';
+      const concentration = item.concentration || '';
+      const size = item.size || '';
+      const soldAt = new Date().toISOString();
+
+      const ledgerRows = [];
+      for (let i = 0; i < count; i++) {
+        const entry = {
+          id: 'sale-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
+          bottle_id: bottleId,
+          brand: brand,
+          name: name,
+          concentration: concentration,
+          size: size,
+          cost: unitCost,
+          sold_price: soldPrice,
+          sold_at: soldAt,
+          user_id: currentUser ? currentUser.id : 'dev-admin-id'
+        };
+        salesLedger.unshift(entry);
+        ledgerRows.push({
+          bottle_id: bottleId,
+          brand: brand,
+          name: name,
+          concentration: concentration,
+          size: size,
+          cost: unitCost,
+          sold_price: soldPrice,
+          sold_at: soldAt
+        });
+      }
+
+      // Decrement inventory quantity and update status
+      const currentQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
+      const remainingQty = Math.max(0, currentQty - count);
+      item.qty = remainingQty;
+      if (remainingQty === 0) {
+        item.status = "Sold";
+      } else {
+        item.status = "In Stock";
+      }
+
+      renderDashboard();
+      if (!document.getElementById("modal-sales-sheet")?.classList.contains("hidden")) {
+        renderSalesStatement();
+      }
+
+      // Cloud persistence
+      if (window.sbClient && currentUser) {
+        try {
+          await window.sbClient.from("sales_ledger").insert(ledgerRows);
+          await window.sbClient
+            .from("inventory")
+            .update({ qty: item.qty, status: item.status, updated_at: new Date().toISOString() })
+            .eq("id", item.id);
+        } catch (err) {
+          console.warn("Cloud sales_ledger sync note:", err);
+        }
+      }
+
+      const totalRev = (soldPrice * count).toFixed(2);
+      const totalProfit = ((soldPrice - unitCost) * count).toFixed(2);
+      showToast(`Recorded sale for "${name}" (+$${totalRev} rev | +$${totalProfit} net)`);
+    };
+
     // Task 1 & 2: Interactive Status Cycling Handler (Needs Price -> Needs Listing -> In Stock -> Sold -> Needs Price)
     window.cycleStatus = async function(id) {
       const it = items.find((x) => x.id === id);
       if (!it) return;
 
-      let nextStatus;
       if (it.status === "Needs Price") {
-        nextStatus = "Needs Listing";
+        it.status = "Needs Listing";
       } else if (it.status === "Needs Listing") {
-        nextStatus = "In Stock";
+        it.status = "In Stock";
       } else if (it.status === "In Stock") {
-        nextStatus = "Sold";
+        // Transitioning to Sold: record sale into immutable sales ledger!
+        await recordSale(it, 1);
+        return;
       } else {
-        nextStatus = "Needs Price";
+        // Restocking/recycling back to Needs Price (ledger remains untouched!)
+        it.status = "Needs Price";
       }
 
-      it.status = nextStatus;
       renderDashboard();
 
       if (window.sbClient && currentUser) {
         try {
           await window.sbClient
             .from("inventory")
-            .update({ status: nextStatus, updated_at: new Date().toISOString() })
+            .update({ status: it.status, updated_at: new Date().toISOString() })
             .eq("id", id);
-          showToast(`"${it.name}" status updated to ${nextStatus.toUpperCase()}`);
+          showToast(`"${it.name}" status updated to ${it.status.toUpperCase()}`);
         } catch (e) {
           fetchInventory();
         }
@@ -1717,6 +2068,13 @@
       if (!it) return;
 
       const currentQty = (it.qty !== undefined && it.qty !== null) ? Number(it.qty) : 1;
+
+      // If decrementing active in-stock item, record sale
+      if (delta < 0 && it.status !== "Sold" && currentQty > 0) {
+        await recordSale(it, Math.min(Math.abs(delta), currentQty));
+        return;
+      }
+
       const newQty = currentQty + delta;
 
       if (newQty <= 0) {
@@ -2597,12 +2955,18 @@
       };
 
       if (editId) {
-        if (window.sbClient && currentUser) {
-          try { await window.sbClient.from("inventory").update(payload).eq("id", editId); } catch(e) {}
+        const existingItem = items.find((it) => it.id === editId);
+        const wasActive = existingItem && existingItem.status !== "Sold";
+        if (wasActive && status === "Sold") {
+          await recordSale({ ...existingItem, cost: cost, listedPrice: listed }, existingItem.qty || 1);
         } else {
-          items = items.map((it) => it.id === editId ? { ...it, ...payload, cost: cost, listedPrice: listed, retailMSRP: msrp } : it);
+          if (window.sbClient && currentUser) {
+            try { await window.sbClient.from("inventory").update(payload).eq("id", editId); } catch(e) {}
+          } else {
+            items = items.map((it) => it.id === editId ? { ...it, ...payload, cost: cost, listedPrice: listed, retailMSRP: msrp } : it);
+          }
+          showToast("Bottle updated.");
         }
-        showToast("Bottle updated.");
       } else {
         payload.id = `ARM-${Date.now()}`;
         if (window.sbClient && currentUser) {
@@ -4498,6 +4862,198 @@ ${desc}`;
       showToast(`✅ Added ${filesToProcess.length} photo(s). Total: ${currentStudioPhotos.length} / 8`);
       if (studioFileInput) studioFileInput.value = "";
     }
+
+    // ==============================================================
+    // 12. SALES STATEMENT & TIME-PERIOD LEDGER CONTROLLER
+    // ==============================================================
+    function getStatementDateRange(period) {
+      const now = new Date();
+      let start, end, label;
+
+      if (period === "THIS_MONTH") {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        label = `Period: This Month (${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`;
+      } else if (period === "LAST_MONTH") {
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+        label = `Period: Last Month (${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`;
+      } else if (period === "LAST_30_DAYS") {
+        start = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        end = now;
+        label = `Period: Last 30 Days (${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`;
+      } else if (period === "LAST_60_DAYS") {
+        start = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000));
+        end = now;
+        label = `Period: Last 60 Days (${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`;
+      } else if (period === "YTD") {
+        start = new Date(now.getFullYear(), 0, 1);
+        end = now;
+        label = `Period: This Year YTD (${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`;
+      } else if (period === "CUSTOM") {
+        const fromVal = document.getElementById("sales-date-from")?.value;
+        const toVal = document.getElementById("sales-date-to")?.value;
+        start = fromVal ? new Date(fromVal + "T00:00:00") : new Date(0);
+        end = toVal ? new Date(toVal + "T23:59:59.999") : new Date();
+        label = `Period: Custom Range (${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} – ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })})`;
+      } else {
+        // ALL_TIME
+        start = new Date(0);
+        end = new Date(8640000000000000);
+        label = "Period: All Time (Complete Historical Ledger)";
+      }
+
+      return { start, end, label };
+    }
+
+    window.openSalesStatement = function() {
+      const modal = document.getElementById("modal-sales-sheet");
+      if (!modal) return;
+      modal.classList.remove("hidden");
+      renderSalesStatement();
+    };
+
+    window.closeSalesStatement = function() {
+      const modal = document.getElementById("modal-sales-sheet");
+      if (modal) modal.classList.add("hidden");
+    };
+
+    window.renderSalesStatement = function() {
+      const periodSelect = document.getElementById("sales-period-select");
+      const period = periodSelect ? periodSelect.value : "LAST_30_DAYS";
+      const { start, end, label } = getStatementDateRange(period);
+
+      const periodLabelEl = document.getElementById("sales-period-label");
+      if (periodLabelEl) periodLabelEl.textContent = label;
+
+      // Filter transactions within time window
+      const filtered = (salesLedger || []).filter((s) => {
+        const d = new Date(s.sold_at || s.created_at || Date.now());
+        return d >= start && d <= end;
+      });
+
+      // Calculate aggregates
+      let totalUnits = 0;
+      let totalRevenue = 0;
+      let totalCost = 0;
+
+      filtered.forEach((s) => {
+        totalUnits += 1;
+        totalRevenue += Number(s.sold_price || 0);
+        totalCost += Number(s.cost || 0);
+      });
+
+      const netProfit = totalRevenue - totalCost;
+      const netMarginPct = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+
+      // Update 5 KPI ribbon cards
+      const elUnits = document.getElementById("statement-units-sold");
+      const elRev = document.getElementById("statement-realized-rev");
+      const elCogs = document.getElementById("statement-realized-cogs");
+      const elProfit = document.getElementById("statement-net-profit");
+      const elMargin = document.getElementById("statement-net-margin");
+
+      if (elUnits) elUnits.textContent = totalUnits.toLocaleString();
+      if (elRev) elRev.textContent = `$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      if (elCogs) elCogs.textContent = `$${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      if (elProfit) {
+        elProfit.textContent = `$${netProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        elProfit.className = netProfit >= 0
+          ? "text-xl sm:text-2xl font-bold text-teal-300 font-mono-num"
+          : "text-xl sm:text-2xl font-bold text-rose-400 font-mono-num";
+      }
+      if (elMargin) {
+        elMargin.textContent = `(${netMarginPct >= 0 ? '+' : ''}${netMarginPct.toFixed(1)}%)`;
+        elMargin.className = netMarginPct >= 0
+          ? "text-xs font-semibold ml-2 text-emerald-400 font-mono-num"
+          : "text-xs font-semibold ml-2 text-rose-400 font-mono-num";
+      }
+
+      // Render Itemized Table Rows
+      const tbody = document.getElementById("statement-table-body");
+      if (tbody) {
+        if (filtered.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="py-8 text-center text-slate-500 font-sans text-xs">
+                No sales transactions recorded in this period. Mark items as "Sold" to populate ledger.
+              </td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML = filtered.map((s) => {
+            const soldDate = new Date(s.sold_at || s.created_at || Date.now());
+            const dateStr = soldDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+            const sPrice = Number(s.sold_price || 0);
+            const sCost = Number(s.cost || 0);
+            const sProfit = sPrice - sCost;
+            const sMargin = sPrice > 0 ? (sProfit / sPrice) * 100 : 0;
+            const profitColorClass = sProfit >= 0 ? "text-emerald-400" : "text-rose-400";
+
+            return `
+              <tr class="hover:bg-slate-900/50 transition-colors">
+                <td class="py-2 px-3 text-slate-400 whitespace-nowrap">${dateStr}</td>
+                <td class="py-2 px-3 font-semibold text-slate-300 whitespace-nowrap">${s.brand || "—"}</td>
+                <td class="py-2 px-3 text-white font-medium">${s.name || "Untitled"}</td>
+                <td class="py-2 px-3 text-slate-400 whitespace-nowrap">${s.concentration || ""} ${s.size ? `· ${s.size}` : ""}</td>
+                <td class="py-2 px-3 text-right font-mono text-slate-400">$${sCost.toFixed(2)}</td>
+                <td class="py-2 px-3 text-right font-mono font-semibold text-emerald-400">$${sPrice.toFixed(2)}</td>
+                <td class="py-2 px-3 text-right font-mono font-bold ${profitColorClass}">
+                  ${sProfit >= 0 ? "+" : ""}$${sProfit.toFixed(2)} <span class="text-[10px] opacity-80">(${sMargin.toFixed(0)}%)</span>
+                </td>
+              </tr>
+            `;
+          }).join("");
+        }
+      }
+
+      // Update footer summary
+      const footerEl = document.getElementById("statement-footer-summary");
+      if (footerEl) {
+        footerEl.textContent = `Showing ${filtered.length} transaction${filtered.length === 1 ? "" : "s"} totaling $${totalRevenue.toFixed(2)} revenue and $${netProfit.toFixed(2)} net profit.`;
+      }
+    };
+
+    // Sales Statement Listeners
+    document.getElementById("btn-open-sales-sheet")?.addEventListener("click", () => {
+      window.openSalesStatement();
+    });
+
+    document.getElementById("btn-close-sales-sheet")?.addEventListener("click", () => {
+      window.closeSalesStatement();
+    });
+
+    document.getElementById("btn-close-sales-sheet-bottom")?.addEventListener("click", () => {
+      window.closeSalesStatement();
+    });
+
+    // Close on backdrop click
+    document.getElementById("modal-sales-sheet")?.addEventListener("click", (e) => {
+      if (e.target.id === "modal-sales-sheet") {
+        window.closeSalesStatement();
+      }
+    });
+
+    // Timeframe selector change handler
+    document.getElementById("sales-period-select")?.addEventListener("change", (e) => {
+      const customDatesDiv = document.getElementById("sales-custom-dates");
+      if (e.target.value === "CUSTOM") {
+        customDatesDiv?.classList.remove("hidden");
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        const dateFrom = document.getElementById("sales-date-from");
+        const dateTo = document.getElementById("sales-date-to");
+        if (dateFrom && !dateFrom.value) dateFrom.value = thirtyDaysAgo.toISOString().split("T")[0];
+        if (dateTo && !dateTo.value) dateTo.value = now.toISOString().split("T")[0];
+      } else {
+        customDatesDiv?.classList.add("hidden");
+      }
+      renderSalesStatement();
+    });
+
+    document.getElementById("btn-apply-custom-dates")?.addEventListener("click", () => {
+      renderSalesStatement();
+    });
 
     // Check active session on boot
     checkSession();
