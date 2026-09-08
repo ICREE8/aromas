@@ -153,62 +153,65 @@
   <!-- ========================================================= -->
   <main id="view-dashboard" class="hidden max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6 flex-1">
 
-    <!-- 1. Headline 4 KPI Cards -->
+    <!-- 1. Headline 4 Financial & Inventory KPI Cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- Total Units In-Stock (Sum of Qty for In Stock & Needs Price) -->
       <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Total Units In-Stock</span>
+          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">In-Stock Units</span>
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/15 text-blue-400 border border-blue-500/30">Units</span>
         </div>
-        <div class="my-3 flex items-baseline gap-3">
-          <span id="metric-in-stock" class="text-3xl lg:text-4xl font-black text-white font-mono-num">0</span>
-          <span id="metric-sold" class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+        <div class="my-3 flex items-baseline gap-2">
+          <span id="metric-in-stock" class="text-3xl font-black text-white font-mono-num">0</span>
+          <span id="metric-sold" class="text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
             0 Sold
           </span>
         </div>
         <div class="text-[11px] text-slate-400 flex items-center justify-between">
-          <span>Active verified inventory</span>
+          <span>Active inventory</span>
           <span id="metric-total" class="text-slate-500 font-mono-num">0 Total</span>
         </div>
+      </div>
+
+      <!-- Total Invested Cost -->
+      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Invested Cost</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 border border-sky-500/30">Cost</span>
+        </div>
+        <div class="my-3">
+          <span id="metric-cost" class="text-3xl font-black text-sky-400 font-mono-num">$0.00</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Total invested (In-Stock × Unit Cost)</p>
       </div>
 
       <!-- Listed Revenue Value -->
       <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Listed Price Revenue</span>
+          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Listed Revenue</span>
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Revenue</span>
         </div>
         <div class="my-3">
-          <span id="metric-listed" class="text-3xl lg:text-4xl font-black text-emerald-400 font-mono-num">$0.00</span>
+          <span id="metric-listed" class="text-3xl font-black text-emerald-400 font-mono-num">$0.00</span>
         </div>
-        <p class="text-[11px] text-slate-400">Total expected revenue (In-Stock × Qty)</p>
+        <p class="text-[11px] text-slate-400">Expected return (In-Stock × List)</p>
       </div>
 
-      <!-- Retail MSRP Value -->
+      <!-- Gross Margin -->
       <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Retail / MSRP Value</span>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-400 border border-purple-500/30">MSRP</span>
-        </div>
-        <div class="my-3">
-          <span id="metric-msrp" class="text-3xl lg:text-4xl font-black text-slate-200 font-mono-num">$0.00</span>
-        </div>
-        <p class="text-[11px] text-slate-400">Original shelf market price</p>
-      </div>
-
-      <!-- Customer Savings -->
-      <div class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-5 flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Customer Savings</span>
-          <span id="metric-savings-pct" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30">
-            0.0% OFF
+          <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Gross Margin</span>
+          <span id="metric-margin-pct" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30">
+            0.0% Margin
           </span>
         </div>
         <div class="my-3">
-          <span id="metric-savings" class="text-3xl lg:text-4xl font-black text-rose-400 font-mono-num">$0.00</span>
+          <span id="metric-margin" class="text-3xl font-black text-teal-300 font-mono-num">$0.00</span>
         </div>
-        <p class="text-[11px] text-slate-400">Total buyer discounts offered</p>
+        <div class="flex items-center justify-between text-[11px] text-slate-400">
+          <span>Unrealized profit</span>
+          <span id="metric-realized-profit" class="font-bold text-emerald-400 font-mono-num" title="Realized Net Cash Profit from Sold items">+$0.00 Realized</span>
+        </div>
       </div>
     </section>
 
@@ -289,9 +292,9 @@
 
       <div class="flex flex-wrap items-center gap-2.5">
         <button id="btn-open-scanner" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-purple-900/80 via-indigo-900/80 to-teal-900/80 hover:from-purple-800 hover:to-teal-800 text-white border border-purple-500/50 shadow-lg shadow-purple-500/10 transition-all active:scale-95 cursor-pointer">
-          <span>📷</span>
-          <span>Scan Supplier Photo</span>
-          <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-purple-500/30 text-purple-200 font-bold border border-purple-400/40">AI Vision</span>
+          <span>✨</span>
+          <span>AI Vision Assist</span>
+          <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-purple-500/30 text-purple-200 font-bold border border-purple-400/40">Prompt Studio</span>
         </button>
 
         <button id="btn-open-add" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer">
@@ -351,9 +354,24 @@
       </div>
     </section>
 
-    <!-- 4. Master Inventory Table Header Counter -->
-    <div class="text-xs text-slate-400">
-      Showing <strong id="label-shown-count" class="text-white font-mono-num">0</strong> of <strong id="label-total-count" class="text-white font-mono-num">0</strong> bottles
+    <!-- 4. Master Inventory Table Header Counter & Financial Summary Ribbon -->
+    <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+      <div>
+        Showing <strong id="label-shown-count" class="text-white font-mono-num">0</strong> of <strong id="label-total-count" class="text-white font-mono-num">0</strong> bottles
+      </div>
+      <div id="ribbon-financial-summary" class="flex flex-wrap items-center gap-3 text-[11px]">
+        <span>Total Cost: <strong id="ribbon-total-cost" class="text-sky-400 font-mono-num">$0.00</strong></span>
+        <span class="text-slate-600">•</span>
+        <span>Listed Value: <strong id="ribbon-total-listed" class="text-emerald-400 font-mono-num">$0.00</strong></span>
+        <span class="text-slate-600">•</span>
+        <span>Unrealized Margin: <strong id="ribbon-total-margin" class="text-teal-300 font-mono-num">$0.00</strong></span>
+        <span class="text-slate-600">•</span>
+        <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-medium flex items-center gap-1">
+          <span>💰 Realized Net Profit:</span>
+          <strong id="ribbon-realized-profit" class="font-bold text-emerald-400 font-mono-num">$0.00</strong>
+          <span id="ribbon-realized-detail" class="text-[10px] text-emerald-400/80 font-mono">(0 sold: $0.00 rev - $0.00 cost)</span>
+        </span>
+      </div>
     </div>
 
     <section class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 overflow-hidden shadow-xl">
@@ -367,6 +385,7 @@
               <th class="py-3.5 px-4 w-28">Size</th>
               <th class="py-3.5 px-4 w-32">Condition</th>
               <th class="py-3.5 px-4 text-center w-28">Qty</th>
+              <th class="py-3.5 px-4 text-right w-28">Cost ($)</th>
               <th class="py-3.5 px-4 text-right w-32">Listed Price</th>
               <th class="py-3.5 px-4 text-right w-32">Retail MSRP</th>
               <th class="py-3.5 px-4 text-center w-36">Status</th>
@@ -500,7 +519,11 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-sky-400 font-bold mb-1">Unit Cost ($)</label>
+            <input id="bottle-cost" type="number" step="0.01" placeholder="0.00" class="w-full px-3 py-2 bg-slate-900 border border-sky-500/50 rounded-lg text-sky-300 font-mono-num font-bold focus:outline-none focus:border-sky-400">
+          </div>
           <div>
             <label class="block text-emerald-400 font-bold mb-1">Listed Price ($)</label>
             <input id="bottle-listed" type="number" step="0.01" placeholder="Unpriced (Needs Price)" class="w-full px-3 py-2 bg-slate-900 border border-emerald-500/50 rounded-lg text-emerald-300 font-mono-num font-bold focus:outline-none focus:border-emerald-400">
@@ -545,8 +568,8 @@
             📷
           </div>
           <div>
-            <h3 class="text-base font-extrabold text-white tracking-tight">AI Supplier Photo & Inbound Inventory Scanner</h3>
-            <p class="text-xs text-slate-400">Upload dense shipment box grid photos to extract physical batch codes and catalog items into Needs Price status.</p>
+            <h3 class="text-base font-extrabold text-white tracking-tight">✨ AI Vision Assist &amp; Multi-Task Prompt Studio</h3>
+            <p class="text-xs text-slate-400">Extract shipments, count high-density grids, and match invoice costs into your vault.</p>
           </div>
         </div>
         <button id="btn-close-scanner" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer">✕</button>
@@ -557,16 +580,29 @@
         <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
           <!-- Step 1 Card: Launch & Copy -->
           <div class="md:col-span-5 bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 rounded-2xl border border-slate-800 p-5 flex flex-col justify-between space-y-4 shadow-xl">
-            <div class="space-y-2.5">
+            <div class="space-y-3">
               <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-[11px] font-bold">
                 <span>Step 1</span>
                 <span class="text-slate-500">•</span>
-                <span>Copy & Launch</span>
+                <span>Select &amp; Launch</span>
               </div>
-              <h4 class="text-sm font-extrabold text-white tracking-tight">Extract via AI Chat</h4>
+              <h4 class="text-sm font-extrabold text-white tracking-tight">Multi-Task Prompt Matrix</h4>
               <p class="text-xs text-slate-400 leading-relaxed">
-                Copies the hardened 6-column extraction prompt and opens chat in a new tab. Attach your supplier photo(s) and run.
+                Choose your intake scenario. Copies the specialized prompt to clipboard and opens Gemini AI chat in a new tab.
               </p>
+
+              <!-- Task Selector UI -->
+              <div class="space-y-1.5 pt-1">
+                <label for="prompt-task-select" class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">Extraction Task Preset</label>
+                <select id="prompt-task-select" class="w-full px-3 py-2 bg-slate-950 border border-slate-700/80 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-pink-500 transition-all cursor-pointer">
+                  <option value="standard" selected>Standard Inbound Intake (6 cols, Box + Cond)</option>
+                  <option value="invoice">Invoice &amp; Cost Matching (7 cols, Box + Unit Cost)</option>
+                  <option value="density">High-Density Stacks (Strict 15+ Stack Count)</option>
+                </select>
+                <p id="prompt-task-hint" class="text-[11px] text-slate-400">
+                  Standard 6-column intake: Brand, Name, Conc, Size, Condition, Qty.
+                </p>
+              </div>
             </div>
 
             <button id="btn-magic-scan" type="button" class="btn-magic w-full py-3 px-4 rounded-xl text-white font-black text-sm shadow-xl shadow-pink-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer border border-pink-400/30 active:scale-[0.98]">
@@ -626,6 +662,7 @@
                   <th class="py-2.5 px-3 w-28">Type</th>
                   <th class="py-2.5 px-3 w-28">Size</th>
                   <th class="py-2.5 px-3 w-20 text-center">Qty</th>
+                  <th class="py-2.5 px-3 w-24 text-right">Cost ($)</th>
                   <th class="py-2.5 px-3 w-32">Condition</th>
                   <th class="py-2.5 px-3 w-12 text-center">Actions</th>
                 </tr>
@@ -913,6 +950,100 @@
     let currentUser = null;
     let authMode = "signin";
 
+    // Offline Dev Mode Sample Inventory
+    window.SAMPLE_ITEMS = [
+      {
+        id: "ARM-SAMPLE-1",
+        sku: "Item-1",
+        name: "Sauvage Elixir",
+        brand: "Dior",
+        concentration: "Parfum",
+        size: "3.4 oz / 100 ml (Standard Full Size)",
+        condition: "Brand New / Factory Sealed",
+        qty: 3,
+        cost: 110.00,
+        unit_cost: 110.00,
+        listedPrice: 185.00,
+        listed_price: 185.00,
+        retailMSRP: 230.00,
+        retail_msrp: 230.00,
+        status: "In Stock",
+        warehouse: "Location A: 1"
+      },
+      {
+        id: "ARM-SAMPLE-2",
+        sku: "Item-2",
+        name: "Aventus",
+        brand: "Creed",
+        concentration: "EDP",
+        size: "3.4 oz / 100 ml (Standard Full Size)",
+        condition: "Brand New / Factory Sealed",
+        qty: 2,
+        cost: 240.00,
+        unit_cost: 240.00,
+        listedPrice: 365.00,
+        listed_price: 365.00,
+        retailMSRP: 495.00,
+        retail_msrp: 495.00,
+        status: "In Stock",
+        warehouse: "Location A: 2"
+      },
+      {
+        id: "ARM-SAMPLE-3",
+        sku: "Item-3",
+        name: "Baccarat Rouge 540",
+        brand: "Maison Francis Kurkdjian",
+        concentration: "Extrait",
+        size: "2.4 oz / 70 ml",
+        condition: "Brand New / Factory Sealed",
+        qty: 1,
+        cost: 280.00,
+        unit_cost: 280.00,
+        listedPrice: 425.00,
+        listed_price: 425.00,
+        retailMSRP: 540.00,
+        retail_msrp: 540.00,
+        status: "In Stock",
+        warehouse: "Location B: 1"
+      },
+      {
+        id: "ARM-SAMPLE-4",
+        sku: "Item-4",
+        name: "Bleu de Chanel",
+        brand: "Chanel",
+        concentration: "EDP",
+        size: "3.4 oz / 100 ml (Standard Full Size)",
+        condition: "Brand New / Factory Sealed",
+        qty: 4,
+        cost: 95.00,
+        unit_cost: 95.00,
+        listedPrice: 145.00,
+        listed_price: 145.00,
+        retailMSRP: 180.00,
+        retail_msrp: 180.00,
+        status: "In Stock",
+        warehouse: "Location A: 3"
+      },
+      {
+        id: "ARM-SAMPLE-5",
+        sku: "Item-5",
+        name: "Tobacco Vanille",
+        brand: "Tom Ford",
+        concentration: "EDP",
+        size: "1.7 oz / 50 ml",
+        condition: "New in Box (Unsealed / Opened Box)",
+        qty: 1,
+        cost: 160.00,
+        unit_cost: 160.00,
+        listedPrice: null,
+        listed_price: null,
+        retailMSRP: 295.00,
+        retail_msrp: 295.00,
+        status: "Needs Price",
+        warehouse: "Location C: 1"
+      }
+    ];
+
     // Scanner state
     let scannedItems = [];
     let currentDownsampledImage = null;
@@ -1040,7 +1171,12 @@
       }
       try {
         const { data: { session }, error } = await window.sbClient.auth.getSession();
-        if (!error && session && session.user && session.user.id) {
+        if (error) {
+          console.warn("Session check error:", error);
+          setLoggedOutState();
+          return;
+        }
+        if (session && session.user && session.user.id) {
           setLoggedInState(session.user);
         } else {
           setLoggedOutState();
@@ -1082,10 +1218,12 @@
         return;
       }
       currentUser = user;
+
       document.getElementById("view-login")?.classList.add("hidden");
       document.getElementById("view-dashboard")?.classList.remove("hidden");
       document.getElementById("header-actions")?.classList.remove("hidden");
-      document.getElementById("user-email-display").textContent = user.email || "Active Member";
+      const emailDisplay = document.getElementById("user-email-display");
+      if (emailDisplay) emailDisplay.textContent = user.email || "Active Member";
       
       const badge = document.getElementById("badge-cloud-status");
       if (badge) {
@@ -1096,6 +1234,7 @@
       fetchInventory();
       listenToRealtimeChanges();
     }
+    window.setLoggedInState = setLoggedInState;
 
     function setLoggedOutState() {
       currentUser = null;
@@ -1123,6 +1262,12 @@
       if (e) e.preventDefault();
       if (!window.sbClient) {
         showToast("Supabase client not initialized. Check connection.");
+        const errorBox = document.getElementById("login-error-box");
+        const errorMsg = document.getElementById("login-error-msg");
+        if (errorBox && errorMsg) {
+          errorMsg.textContent = "Supabase client not initialized. Check network connection or configuration.";
+          errorBox.classList.remove("hidden");
+        }
         return;
       }
 
@@ -1132,49 +1277,58 @@
       const errorMsg = document.getElementById("login-error-msg");
       if (errorBox) errorBox.classList.add("hidden");
 
+      if (!email || !password) {
+        if (errorMsg) errorMsg.textContent = "Please enter both email and password.";
+        if (errorBox) errorBox.classList.remove("hidden");
+        return;
+      }
+
       const btn = document.getElementById("btn-submit-login");
       const submitText = document.getElementById("btn-login-text");
-      const origText = submitText.textContent;
-      btn.disabled = true;
-      submitText.textContent = "Connecting to Supabase...";
+      const origText = submitText ? submitText.textContent : "Submit";
+      if (btn) btn.disabled = true;
+      if (submitText) submitText.textContent = "Connecting to Supabase...";
 
       try {
         if (authMode === "signup") {
           const { data, error } = await window.sbClient.auth.signUp({ email, password });
-          btn.disabled = false;
-          submitText.textContent = origText;
+          if (btn) btn.disabled = false;
+          if (submitText) submitText.textContent = origText;
 
           if (error) {
-            errorMsg.textContent = error.message;
-            errorBox.classList.remove("hidden");
+            console.error("[SUPABASE SIGNUP ERROR]", { code: error.code, status: error.status, message: error.message, error });
+            if (errorMsg) errorMsg.textContent = `Sign Up Failed: ${error.message}${error.status ? ` (Status: ${error.status})` : ""}`;
+            if (errorBox) errorBox.classList.remove("hidden");
           } else if (data && data.user) {
             if (data.session) {
               setLoggedInState(data.user);
               showToast("Account registered and logged in!");
             } else {
               showToast("Registered! Check Supabase email confirmation.");
-              errorMsg.textContent = "User created! Confirm email under Supabase Auth.";
-              errorBox.classList.remove("hidden");
+              if (errorMsg) errorMsg.textContent = "User created! Please check your email to confirm your account under Supabase Auth.";
+              if (errorBox) errorBox.classList.remove("hidden");
             }
           }
         } else {
           const { data, error } = await window.sbClient.auth.signInWithPassword({ email, password });
-          btn.disabled = false;
-          submitText.textContent = origText;
+          if (btn) btn.disabled = false;
+          if (submitText) submitText.textContent = origText;
 
           if (error) {
-            errorMsg.textContent = `${error.message}. (Click 'Register New Member' if account does not exist).`;
-            errorBox.classList.remove("hidden");
+            console.error("[SUPABASE SIGNIN ERROR]", { code: error.code, status: error.status, message: error.message, error });
+            if (errorMsg) errorMsg.textContent = `${error.message}${error.status ? ` (Status: ${error.status})` : ""}. (If you do not have an account, click 'Register New Member').`;
+            if (errorBox) errorBox.classList.remove("hidden");
           } else if (data && data.user) {
             setLoggedInState(data.user);
             showToast("Welcome back to Aromas Vault!");
           }
         }
       } catch (err) {
-        btn.disabled = false;
-        submitText.textContent = origText;
-        errorMsg.textContent = err.message || "Network error connecting to Supabase.";
-        errorBox.classList.remove("hidden");
+        console.error("[SUPABASE AUTH EXCEPTION]", err);
+        if (btn) btn.disabled = false;
+        if (submitText) submitText.textContent = origText;
+        if (errorMsg) errorMsg.textContent = err.message || "Network error connecting to Supabase.";
+        if (errorBox) errorBox.classList.remove("hidden");
       }
     };
 
@@ -1205,6 +1359,7 @@
 
         items = (data || []).map((row) => {
           const listPrice = row.listed_price !== null && row.listed_price !== undefined ? Number(row.listed_price) : null;
+          const unitCost = row.cost !== null && row.cost !== undefined && !isNaN(row.cost) ? Number(row.cost) : null;
           const photosArr = row.photos || row.image_urls;
           const hasPhotos = Boolean(photosArr && (Array.isArray(photosArr) ? photosArr.length > 0 : String(photosArr).trim() !== ""));
           const hasListingCopy = Boolean((row.listing_copy || row.listing_description || row.copy) && String(row.listing_copy || row.listing_description || row.copy).trim() !== "");
@@ -1227,6 +1382,8 @@
             size: row.size,
             condition: row.condition,
             qty: Number(row.qty) || 1,
+            cost: unitCost,
+            unit_cost: unitCost,
             listedPrice: listPrice,
             listed_price: listPrice,
             retailMSRP: row.retail_msrp !== null && row.retail_msrp !== undefined ? Number(row.retail_msrp) : null,
@@ -1291,9 +1448,12 @@
       }
       let totalUnitsInStock = 0;
       let soldUnits = 0;
+      let soldRevenue = 0;
+      let soldCost = 0;
       let totalItems = items.length;
       let listedSum = 0;
       let msrpSum = 0;
+      let costSum = 0;
       let brandMap = {};
       let concMap = { EDP: 0, EDT: 0, Parfum: 0, Other: 0 };
       let newSealedCount = 0;
@@ -1305,6 +1465,7 @@
         const q = Number(item.qty) || 1;
         const list = (item.listedPrice !== null && item.listedPrice !== undefined) ? Number(item.listedPrice) : 0;
         const msrp = (item.retailMSRP !== null && item.retailMSRP !== undefined) ? Number(item.retailMSRP) : list;
+        const c = (item.cost !== null && item.cost !== undefined && !isNaN(item.cost)) ? Number(item.cost) : 0;
 
         const isNeedsPrice = item.status === "Needs Price" || (item.status !== "Sold" && (item.listedPrice === null || item.listedPrice === undefined || Number(item.listedPrice) === 0));
         const isNeedsListing = item.status === "Needs Listing";
@@ -1312,17 +1473,22 @@
         if (isNeedsPrice) {
           needsPriceCount++;
           totalUnitsInStock += q;
+          costSum += c * q;
         } else if (isNeedsListing) {
           needsListingCount++;
           totalUnitsInStock += q;
           listedSum += list * q;
           msrpSum += msrp * q;
+          costSum += c * q;
         } else if (item.status === "In Stock") {
           totalUnitsInStock += q;
           listedSum += list * q;
           msrpSum += msrp * q;
+          costSum += c * q;
         } else if (item.status === "Sold") {
           soldUnits += q;
+          soldRevenue += list * q;
+          soldCost += c * q;
         }
 
         if (item.condition && item.condition.toLowerCase().includes("tester")) {
@@ -1344,17 +1510,65 @@
         }
       });
 
+      const realizedProfit = soldRevenue - soldCost;
+      const realizedMarginPct = soldRevenue > 0 ? (realizedProfit / soldRevenue) * 100 : 0;
       const savings = Math.max(0, msrpSum - listedSum);
       const savingsPct = msrpSum > 0 ? (savings / msrpSum) * 100 : 0;
+      const grossMargin = listedSum - costSum;
+      const grossMarginPct = listedSum > 0 ? (grossMargin / listedSum) * 100 : 0;
 
       // Dynamic KPI Math Updates
       document.getElementById("metric-in-stock").textContent = totalUnitsInStock;
-      document.getElementById("metric-sold").textContent = `${soldUnits} Sold`;
+      
+      const soldEl = document.getElementById("metric-sold");
+      if (soldEl) {
+        soldEl.textContent = `${soldUnits} Sold (${realizedProfit >= 0 ? '+' : ''}${formatMoney(realizedProfit)})`;
+        soldEl.title = `Sold Revenue: ${formatMoney(soldRevenue)} | Sold Cost: ${formatMoney(soldCost)} | Realized Margin: ${realizedMarginPct.toFixed(1)}%`;
+      }
+
       document.getElementById("metric-total").textContent = `${totalItems} Items`;
+      
+      const costEl = document.getElementById("metric-cost");
+      if (costEl) costEl.textContent = formatMoney(costSum);
+      
       document.getElementById("metric-listed").textContent = formatMoney(listedSum);
-      document.getElementById("metric-msrp").textContent = formatMoney(msrpSum);
-      document.getElementById("metric-savings").textContent = formatMoney(savings);
-      document.getElementById("metric-savings-pct").textContent = `${savingsPct.toFixed(1)}% OFF`;
+      
+      const marginEl = document.getElementById("metric-margin");
+      if (marginEl) marginEl.textContent = formatMoney(grossMargin);
+      
+      const marginPctEl = document.getElementById("metric-margin-pct");
+      if (marginPctEl) marginPctEl.textContent = `${grossMarginPct >= 0 ? '+' : ''}${grossMarginPct.toFixed(1)}% Margin`;
+
+      const metricRealizedEl = document.getElementById("metric-realized-profit");
+      if (metricRealizedEl) {
+        metricRealizedEl.textContent = `${realizedProfit >= 0 ? '+' : ''}${formatMoney(realizedProfit)} Realized`;
+      }
+
+      const msrpEl = document.getElementById("metric-msrp");
+      if (msrpEl) msrpEl.textContent = formatMoney(msrpSum);
+
+      const savingsEl = document.getElementById("metric-savings");
+      if (savingsEl) savingsEl.textContent = formatMoney(savings);
+
+      const savingsPctEl = document.getElementById("metric-savings-pct");
+      if (savingsPctEl) savingsPctEl.textContent = `${savingsPct.toFixed(1)}% OFF`;
+
+      // Financial Summary Ribbon in Master Table Header
+      const ribbonCost = document.getElementById("ribbon-total-cost");
+      if (ribbonCost) ribbonCost.textContent = formatMoney(costSum);
+      const ribbonListed = document.getElementById("ribbon-total-listed");
+      if (ribbonListed) ribbonListed.textContent = formatMoney(listedSum);
+      const ribbonMargin = document.getElementById("ribbon-total-margin");
+      if (ribbonMargin) ribbonMargin.textContent = formatMoney(grossMargin);
+
+      const ribbonRealizedProfit = document.getElementById("ribbon-realized-profit");
+      if (ribbonRealizedProfit) {
+        ribbonRealizedProfit.textContent = `${realizedProfit >= 0 ? '+' : ''}${formatMoney(realizedProfit)}`;
+      }
+      const ribbonRealizedDetail = document.getElementById("ribbon-realized-detail");
+      if (ribbonRealizedDetail) {
+        ribbonRealizedDetail.textContent = `(${soldUnits} sold: ${formatMoney(soldRevenue)} rev - ${formatMoney(soldCost)} cost)`;
+      }
 
       // Task 1 & 2: Quick Filter Pill Count Updates
       const needsPricePillCount = document.getElementById("count-needs-price");
@@ -1532,6 +1746,110 @@
       }
     };
 
+    // ==============================================================
+    // Inline Cell Editing for Cost and Listed Price
+    // ==============================================================
+    function enableInlineCellEdit(element, itemId, field) {
+      if (!element || element.dataset.isEditing === "true") return;
+      element.dataset.isEditing = "true";
+
+      const item = items.find((x) => String(x.id) === String(itemId));
+      if (!item) {
+        element.dataset.isEditing = "false";
+        return;
+      }
+
+      const originalHTML = element.innerHTML;
+      const currentVal = field === "cost" ? item.cost : item.listedPrice;
+      const numForInput = (currentVal !== null && currentVal !== undefined && !isNaN(currentVal) && Number(currentVal) > 0)
+        ? Number(currentVal)
+        : "";
+
+      const input = document.createElement("input");
+      input.type = "number";
+      input.step = "0.01";
+      input.min = "0";
+      input.value = numForInput;
+      input.placeholder = "0.00";
+      input.className = field === "cost"
+        ? "w-24 px-1.5 py-0.5 bg-slate-900 border border-sky-500 rounded text-right font-mono-num text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-400 shadow-sm"
+        : "w-24 px-1.5 py-0.5 bg-slate-900 border border-emerald-500 rounded text-right font-mono-num text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-400 shadow-sm";
+
+      element.replaceChildren(input);
+      input.focus();
+      if (input.value) input.select();
+
+      let isCommitted = false;
+      let isCancelled = false;
+
+      const commitChange = async () => {
+        if (isCommitted || isCancelled) return;
+        isCommitted = true;
+        element.dataset.isEditing = "false";
+
+        const raw = input.value.trim();
+        let num = raw === "" ? null : parseFloat(raw);
+        if (num !== null && (isNaN(num) || num < 0)) num = 0;
+        if (num !== null) num = Math.round(num * 100) / 100;
+
+        const prevVal = field === "cost" ? (item.cost ?? null) : (item.listedPrice ?? null);
+        const hasChanged = num !== prevVal;
+
+        if (field === "cost") {
+          item.cost = num;
+          item.unit_cost = num;
+        } else {
+          item.listedPrice = num;
+          item.listed_price = num;
+          if (num !== null && num > 0 && item.status === "Needs Price") {
+            item.status = "In Stock";
+          } else if ((num === null || num === 0) && item.status === "In Stock") {
+            item.status = "Needs Price";
+          }
+        }
+
+        renderDashboard();
+
+        if (hasChanged && window.sbClient && currentUser && currentUser.id) {
+          const payload = { updated_at: new Date().toISOString() };
+          if (field === "cost") {
+            payload.cost = num;
+          } else {
+            payload.listed_price = num;
+            payload.status = item.status;
+          }
+          try {
+            await window.sbClient.from("inventory").update(payload).eq("id", itemId);
+            showToast(`${item.name || "Item"} ${field === "cost" ? "cost" : "price"} updated.`);
+          } catch (err) {
+            console.warn("Background inline edit sync note:", err);
+          }
+        }
+      };
+
+      const cancelChange = () => {
+        if (isCommitted || isCancelled) return;
+        isCancelled = true;
+        element.dataset.isEditing = "false";
+        element.innerHTML = originalHTML;
+      };
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          commitChange();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          cancelChange();
+        }
+      });
+
+      input.addEventListener("blur", () => {
+        commitChange();
+      });
+    }
+    window.enableInlineCellEdit = enableInlineCellEdit;
+
     // Master Table Renderer
     function renderTable() {
       if (!currentUser || !currentUser.id) {
@@ -1682,7 +2000,7 @@
       if (filtered.length === 0) {
         const tr = document.createElement("tr");
         const td = document.createElement("td");
-        td.colSpan = 10;
+        td.colSpan = 11;
         td.className = "py-16 px-4 text-center text-slate-400";
         
         const iconDiv = document.createElement("div");
@@ -1809,15 +2127,49 @@
         qtyContainer.appendChild(btnPlus);
         tdQty.appendChild(qtyContainer);
 
-        // Task 1: Listed Price Column (Render "—" or [Needs Price] when null/empty/0)
-        const tdListed = document.createElement("td");
-        tdListed.className = "py-3 px-4 text-right font-bold text-emerald-400 font-mono-num";
-        if (it.listedPrice === null || it.listedPrice === undefined || Number(it.listedPrice) === 0) {
-          tdListed.className = "py-3 px-4 text-right font-semibold text-amber-400 font-mono text-xs";
-          tdListed.textContent = "—";
+        // Unit Purchase Cost Column (Inline Editable)
+        const tdCost = document.createElement("td");
+        tdCost.className = "py-3 px-4 text-right";
+        
+        const costContainer = document.createElement("div");
+        costContainer.className = "inline-flex items-center justify-end font-mono-num font-bold text-sky-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-sky-500/50 px-2 py-1 rounded transition-colors";
+        costContainer.dataset.itemId = it.id;
+        costContainer.dataset.field = "cost";
+        costContainer.title = "Click to edit unit cost";
+
+        if (it.cost === null || it.cost === undefined || Number(it.cost) === 0) {
+          costContainer.className = "inline-flex items-center justify-end font-mono text-xs text-slate-500 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-sky-500/50 px-2 py-1 rounded transition-colors";
+          costContainer.textContent = "—";
         } else {
-          tdListed.textContent = formatMoney(it.listedPrice);
+          costContainer.textContent = formatMoney(it.cost);
         }
+        costContainer.onclick = (e) => {
+          e.stopPropagation();
+          enableInlineCellEdit(costContainer, it.id, "cost");
+        };
+        tdCost.appendChild(costContainer);
+
+        // Task 1: Listed Price Column (Inline Editable)
+        const tdListed = document.createElement("td");
+        tdListed.className = "py-3 px-4 text-right";
+        
+        const listedContainer = document.createElement("div");
+        listedContainer.className = "inline-flex items-center justify-end font-mono-num font-bold text-emerald-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-emerald-500/50 px-2 py-1 rounded transition-colors";
+        listedContainer.dataset.itemId = it.id;
+        listedContainer.dataset.field = "listed_price";
+        listedContainer.title = "Click to edit listed price";
+
+        if (it.listedPrice === null || it.listedPrice === undefined || Number(it.listedPrice) === 0) {
+          listedContainer.className = "inline-flex items-center justify-end font-mono text-xs font-semibold text-amber-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-emerald-500/50 px-2 py-1 rounded transition-colors";
+          listedContainer.textContent = "—";
+        } else {
+          listedContainer.textContent = formatMoney(it.listedPrice);
+        }
+        listedContainer.onclick = (e) => {
+          e.stopPropagation();
+          enableInlineCellEdit(listedContainer, it.id, "listed_price");
+        };
+        tdListed.appendChild(listedContainer);
 
         // Retail MSRP Column
         const tdMsrp = document.createElement("td");
@@ -1887,6 +2239,7 @@
         tr.appendChild(tdSize);
         tr.appendChild(tdCond);
         tr.appendChild(tdQty);
+        tr.appendChild(tdCost);
         tr.appendChild(tdListed);
         tr.appendChild(tdMsrp);
         tr.appendChild(tdStatus);
@@ -1935,6 +2288,7 @@
         if (matchingOpt) condSelect.value = matchingOpt.value;
         else condSelect.value = "Brand New / Factory Sealed";
       }
+      document.getElementById("bottle-cost").value = (it.cost !== null && it.cost !== undefined) ? it.cost : "";
       document.getElementById("bottle-listed").value = (it.listedPrice !== null && it.listedPrice !== undefined) ? it.listedPrice : "";
       document.getElementById("bottle-msrp").value = (it.retailMSRP !== null && it.retailMSRP !== undefined) ? it.retailMSRP : "";
       document.getElementById("bottle-warehouse").value = it.warehouse || "Location A: 1";
@@ -1946,7 +2300,7 @@
       document.getElementById("modal-bottle").classList.remove("hidden");
     }
 
-    // Google Sheets / Excel paste importer
+    // Google Sheets / Excel paste importer (Supports 6-col, 7-col with Cost, and full 11-12 col sheets)
     document.getElementById("btn-submit-import").addEventListener("click", async () => {
       const text = document.getElementById("import-textarea").value.trim();
       if (!text) return;
@@ -1956,110 +2310,196 @@
       let mergedCount = 0;
       let newCount = 0;
 
-      for (let idx = 0; idx < lines.length; idx++) {
+      // Detect header row if present
+      let headerMap = null;
+      let startIndex = 0;
+
+      if (lines.length > 0) {
+        const delimiter0 = lines[0].includes("\t") ? "\t" : ",";
+        const firstCols = lines[0].split(delimiter0).map(c => c.replace(/^["']|["']$/g, "").trim().toLowerCase());
+        const hasHeaderKeywords = firstCols.some(c => 
+          c.includes("sku") || c.includes("item") || c.includes("brand") || c.includes("fragrance") || c.includes("name")
+        );
+        if (hasHeaderKeywords) {
+          startIndex = 1;
+          headerMap = {
+            sku: firstCols.findIndex(c => c.includes("sku") || c.includes("item")),
+            brand: firstCols.findIndex(c => c.includes("brand") || c.includes("house")),
+            name: firstCols.findIndex(c => c === "name" || c.includes("fragrance")),
+            concentration: firstCols.findIndex(c => c.includes("concentration") || c.includes("type")),
+            size: firstCols.findIndex(c => c.includes("size") || c.includes("volume") || c.includes("oz")),
+            condition: firstCols.findIndex(c => c.includes("condition")),
+            qty: firstCols.findIndex(c => c.includes("qty") || c.includes("quantity") || c.includes("count")),
+            cost: firstCols.findIndex(c => c.includes("cost") || c.includes("wholesale")),
+            listed: firstCols.findIndex(c => c.includes("listed") || (c.includes("price") && !c.includes("msrp"))),
+            msrp: firstCols.findIndex(c => c.includes("msrp") || c.includes("retail")),
+            status: firstCols.findIndex(c => c.includes("status")),
+            warehouse: firstCols.findIndex(c => c.includes("warehouse") || c.includes("location"))
+          };
+        }
+      }
+
+      for (let idx = startIndex; idx < lines.length; idx++) {
         const line = lines[idx];
         const delimiter = line.includes("\t") ? "\t" : ",";
         const cols = line.split(delimiter).map((c) => c.replace(/^["']|["']$/g, "").trim());
 
-        if (
-          idx === 0 &&
-          (cols[0].toLowerCase().includes("sku") || cols[1]?.toLowerCase().includes("name") || cols[0]?.toLowerCase().includes("fragrance") || cols[0]?.toLowerCase().includes("item"))
-        ) {
-          continue;
+        if (cols.length < 2) continue;
+
+        let brand = "Designer House";
+        let name = "Unnamed Fragrance";
+        let concentration = "EDP";
+        let size = "3.4 oz / 100 ml (Standard Full Size)";
+        let condition = "Brand New / Factory Sealed";
+        let qty = 1;
+        let cost = null;
+        let listed = null;
+        let msrp = null;
+        let status = "Needs Price";
+        let warehouse = "Location A: 1";
+
+        if (headerMap) {
+          if (headerMap.name !== -1 && cols[headerMap.name]) name = cols[headerMap.name];
+          if (headerMap.brand !== -1 && cols[headerMap.brand]) brand = cols[headerMap.brand];
+          if (headerMap.concentration !== -1 && cols[headerMap.concentration]) concentration = cols[headerMap.concentration];
+          if (headerMap.size !== -1 && cols[headerMap.size]) size = cols[headerMap.size];
+          if (headerMap.condition !== -1 && cols[headerMap.condition]) condition = cols[headerMap.condition];
+          if (headerMap.qty !== -1 && cols[headerMap.qty]) qty = parseInt(cols[headerMap.qty], 10) || 1;
+          if (headerMap.cost !== -1 && cols[headerMap.cost]) {
+            const rawCost = cols[headerMap.cost].replace(/[^0-9.]/g, "");
+            cost = rawCost ? parseFloat(rawCost) : null;
+          }
+          if (headerMap.listed !== -1 && cols[headerMap.listed]) {
+            const rawList = cols[headerMap.listed].replace(/[^0-9.]/g, "");
+            listed = rawList ? parseFloat(rawList) : null;
+          }
+          if (headerMap.msrp !== -1 && cols[headerMap.msrp]) {
+            const rawMsrp = cols[headerMap.msrp].replace(/[^0-9.]/g, "");
+            msrp = rawMsrp ? parseFloat(rawMsrp) : null;
+          }
+          if (headerMap.warehouse !== -1 && cols[headerMap.warehouse]) warehouse = cols[headerMap.warehouse];
+          if (headerMap.status !== -1 && cols[headerMap.status]) status = cols[headerMap.status];
+        } else {
+          // Positional fallback based on column count:
+          // 6 or 7-column intake: Brand, Name, Concentration, Size, Condition, Quantity, [Cost]
+          if (cols.length <= 8) {
+            brand = cols[0] || "Designer House";
+            name = cols[1] || "Unnamed Fragrance";
+            concentration = cols[2] || "EDP";
+            size = cols[3] || "3.4 oz / 100 ml";
+            condition = cols[4] || "Brand New / Factory Sealed";
+            qty = parseInt(cols[5] || "1", 10) || 1;
+            if (cols.length >= 7 && cols[6]) {
+              const rawCost = cols[6].replace(/[^0-9.]/g, "");
+              cost = rawCost ? parseFloat(rawCost) : null;
+            }
+          } else {
+            // Full sheet format (10-12 columns)
+            // Item #, Fragrance Name, Brand, Concentration, Size, Condition, Qty, [Cost], Listed, MSRP...
+            name = cols[1] || cols[0];
+            brand = cols[2] || "Designer House";
+            concentration = cols[3] || "EDP";
+            size = cols[4] || "3.4 oz / 100 ml (Standard Full Size)";
+            condition = cols[5] || "Brand New / Factory Sealed";
+            qty = parseInt(cols[6] || "1", 10) || 1;
+            if (cols.length >= 12) {
+              const rawCost = (cols[7] || "").replace(/[^0-9.]/g, "");
+              cost = rawCost ? parseFloat(rawCost) : null;
+              const rawListed = (cols[8] || "").replace(/[^0-9.]/g, "");
+              listed = rawListed ? parseFloat(rawListed) : null;
+              const rawMsrp = (cols[9] || "").replace(/[^0-9.]/g, "");
+              msrp = rawMsrp ? parseFloat(rawMsrp) : null;
+              warehouse = cols[11] || "Location A: 1";
+            } else {
+              const rawListed = (cols[7] || "").replace(/[^0-9.]/g, "");
+              listed = rawListed ? parseFloat(rawListed) : null;
+              const rawMsrp = (cols[8] || "").replace(/[^0-9.]/g, "");
+              msrp = rawMsrp ? parseFloat(rawMsrp) : null;
+              warehouse = cols[10] || "Location A: 1";
+            }
+          }
         }
 
-        if (cols.length >= 2) {
-          const name = cols[1] || cols[0];
-          const brand = cols[2] || "Designer House";
-          const concentration = cols[3] || "EDP";
-          const size = cols[4] || "3.4 oz / 100 ml (Standard Full Size)";
-          const condition = cols[5] || "Brand New / Factory Sealed";
-          const qty = parseInt(cols[6] || "1", 10) || 1;
+        const incoming = { name, brand, concentration, size };
+        const existing = findDuplicateFragrance(incoming, items);
+
+        if (existing) {
+          mergedCount++;
+          const newQty = (Number(existing.qty) || 0) + qty;
+          const newStatus = existing.status === "Sold" ? (existing.listedPrice ? "In Stock" : "Needs Price") : existing.status;
+          const newCost = (existing.cost !== null && existing.cost !== undefined) ? existing.cost : cost;
           
-          const rawListed = (cols[7] || "").replace(/[^0-9.]/g, "");
-          const listed = rawListed ? parseFloat(rawListed) : null;
-          
-          const rawMsrp = (cols[8] || "").replace(/[^0-9.]/g, "");
-          const msrp = rawMsrp ? parseFloat(rawMsrp) : null;
-          
-          const warehouse = cols[10] || "Location A: 1";
-
-          const incoming = { name, brand, concentration, size };
-          const existing = findDuplicateFragrance(incoming, items);
-
-          if (existing) {
-            mergedCount++;
-            const newQty = (Number(existing.qty) || 0) + qty;
-            const newStatus = existing.status === "Sold" ? (existing.listedPrice ? "In Stock" : "Needs Price") : existing.status;
-            
-            if (window.sbClient && currentUser) {
-              try {
-                await window.sbClient.from("inventory").update({
-                  qty: newQty,
-                  status: newStatus,
-                  updated_at: new Date().toISOString()
-                }).eq("id", existing.id);
-              } catch (e) {
-                console.warn("Cloud paste update notice:", e);
-              }
+          if (window.sbClient && currentUser) {
+            try {
+              await window.sbClient.from("inventory").update({
+                qty: newQty,
+                cost: newCost,
+                status: newStatus,
+                updated_at: new Date().toISOString()
+              }).eq("id", existing.id);
+            } catch (e) {
+              console.warn("Cloud paste update notice:", e);
             }
-            existing.qty = newQty;
-            existing.status = newStatus;
-          } else {
-            newCount++;
-            const assignedSku = "Item-" + nextInt;
-            nextInt++;
-
-            let status = "Needs Price";
-            if (cols[9]) {
-              const s = cols[9].toLowerCase();
-              if (s.includes("sold")) status = "Sold";
-              else if (s.includes("listing")) status = "Needs Listing";
-              else if (s.includes("stock")) status = "In Stock";
-              else if (s.includes("price")) status = "Needs Price";
-            } else {
-              status = (listed !== null && listed > 0) ? "Needs Listing" : "Needs Price";
-            }
-
-            const newRow = {
-              id: `ARM-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
-              sku: assignedSku,
-              name,
-              brand,
-              concentration,
-              size,
-              condition,
-              qty,
-              listed_price: listed,
-              retail_msrp: msrp,
-              status,
-              warehouse,
-              updated_at: new Date().toISOString()
-            };
-
-            if (window.sbClient && currentUser) {
-              try {
-                await window.sbClient.from("inventory").insert([newRow]);
-              } catch (e) {
-                console.warn("Cloud paste insert notice:", e);
-              }
-            }
-
-            items.unshift({
-              id: newRow.id,
-              sku: newRow.sku,
-              name: newRow.name,
-              brand: newRow.brand,
-              concentration: newRow.concentration,
-              size: newRow.size,
-              condition: newRow.condition,
-              qty: newRow.qty,
-              listedPrice: listed,
-              retailMSRP: msrp,
-              status: status,
-              warehouse: newRow.warehouse
-            });
           }
+          existing.qty = newQty;
+          existing.cost = newCost;
+          existing.status = newStatus;
+        } else {
+          newCount++;
+          const assignedSku = "Item-" + nextInt;
+          nextInt++;
+
+          let finalStatus = "Needs Price";
+          if (status && status !== "Needs Price") {
+            const s = status.toLowerCase();
+            if (s.includes("sold")) finalStatus = "Sold";
+            else if (s.includes("listing")) finalStatus = "Needs Listing";
+            else if (s.includes("stock")) finalStatus = "In Stock";
+          } else {
+            finalStatus = (listed !== null && listed > 0) ? "Needs Listing" : "Needs Price";
+          }
+
+          const newRow = {
+            id: `ARM-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+            sku: assignedSku,
+            name,
+            brand,
+            concentration,
+            size,
+            condition,
+            qty,
+            cost,
+            listed_price: listed,
+            retail_msrp: msrp,
+            status: finalStatus,
+            warehouse,
+            updated_at: new Date().toISOString()
+          };
+
+          if (window.sbClient && currentUser) {
+            try {
+              await window.sbClient.from("inventory").insert([newRow]);
+            } catch (e) {
+              console.warn("Cloud paste insert notice:", e);
+            }
+          }
+
+          items.unshift({
+            id: newRow.id,
+            sku: newRow.sku,
+            name: newRow.name,
+            brand: newRow.brand,
+            concentration: newRow.concentration,
+            size: newRow.size,
+            condition: newRow.condition,
+            qty: newRow.qty,
+            cost: cost,
+            unit_cost: cost,
+            listedPrice: listed,
+            retailMSRP: msrp,
+            status: finalStatus,
+            warehouse: newRow.warehouse
+          });
         }
       }
 
@@ -2077,9 +2517,11 @@
     document.getElementById("form-bottle").addEventListener("submit", async (e) => {
       e.preventDefault();
       const editId = document.getElementById("bottle-id").value;
+      const costVal = document.getElementById("bottle-cost") ? document.getElementById("bottle-cost").value.trim() : "";
       const listedVal = document.getElementById("bottle-listed").value.trim();
       const msrpVal = document.getElementById("bottle-msrp").value.trim();
 
+      const cost = costVal !== "" ? parseFloat(costVal) : null;
       const listed = listedVal !== "" ? parseFloat(listedVal) : null;
       const msrp = msrpVal !== "" ? parseFloat(msrpVal) : null;
       const qty = parseInt(document.getElementById("bottle-qty").value, 10) || 1;
@@ -2107,17 +2549,20 @@
           if (addConfirm) {
             const newQty = (Number(existing.qty) || 0) + qty;
             const newStatus = existing.status === "Sold" ? (listed !== null ? "In Stock" : "Needs Price") : existing.status;
+            const newCost = (existing.cost !== null && existing.cost !== undefined) ? existing.cost : cost;
             
             if (window.sbClient && currentUser) {
               try {
                 await window.sbClient.from("inventory").update({
                   qty: newQty,
+                  cost: newCost,
                   status: newStatus,
                   updated_at: new Date().toISOString()
                 }).eq("id", existing.id);
               } catch (e) { console.warn("Add modal merge error:", e); }
             }
             existing.qty = newQty;
+            existing.cost = newCost;
             existing.status = newStatus;
             showToast(`Merged +${qty} Qty into existing item ${existing.sku}!`);
             document.getElementById("modal-bottle").classList.add("hidden");
@@ -2143,6 +2588,7 @@
         size: size,
         condition: condition,
         qty: qty,
+        cost: cost,
         listed_price: listed,
         retail_msrp: msrp,
         status: status,
@@ -2154,7 +2600,7 @@
         if (window.sbClient && currentUser) {
           try { await window.sbClient.from("inventory").update(payload).eq("id", editId); } catch(e) {}
         } else {
-          items = items.map((it) => it.id === editId ? { ...it, ...payload, listedPrice: listed, retailMSRP: msrp } : it);
+          items = items.map((it) => it.id === editId ? { ...it, ...payload, cost: cost, listedPrice: listed, retailMSRP: msrp } : it);
         }
         showToast("Bottle updated.");
       } else {
@@ -2162,7 +2608,7 @@
         if (window.sbClient && currentUser) {
           try { await window.sbClient.from("inventory").insert([payload]); } catch(e) {}
         } else {
-          items.unshift({ ...payload, listedPrice: listed, retailMSRP: msrp });
+          items.unshift({ ...payload, cost: cost, listedPrice: listed, retailMSRP: msrp });
         }
         showToast(`Added "${payload.name}" to vault.`);
       }
@@ -2175,15 +2621,15 @@
       }
     });
 
-    // Copying TSV to paste back into Google Sheets
+    // Copying TSV to paste back into Google Sheets (Includes Unit Cost)
     document.getElementById("btn-copy-sheets").addEventListener("click", () => {
       if (items.length === 0) {
         showToast("No items to copy.");
         return;
       }
-      const headers = ["Item #\tFragrance Name\tBrand\tConcentration\tBottle Size\tCondition\tQty\tListed Price\tRetail MSRP\tStatus\tWarehouse"];
+      const headers = ["Item #\tFragrance Name\tBrand\tConcentration\tBottle Size\tCondition\tQty\tUnit Cost\tListed Price\tRetail MSRP\tStatus\tWarehouse"];
       const rows = items.map(
-        (i) => `${i.sku}\t${i.name}\t${i.brand}\t${i.concentration}\t${i.size}\t${i.condition}\t${i.qty || 1}\t${i.listedPrice || ""}\t${i.retailMSRP || ""}\t${i.status}\t${i.warehouse}`
+        (i) => `${i.sku}\t${i.name}\t${i.brand}\t${i.concentration}\t${i.size}\t${i.condition}\t${i.qty || 1}\t${i.cost !== null && i.cost !== undefined ? i.cost : ""}\t${i.listedPrice || ""}\t${i.retailMSRP || ""}\t${i.status}\t${i.warehouse}`
       );
       const text = [headers, ...rows].join("\n");
 
@@ -2200,13 +2646,13 @@
       document.body.removeChild(el);
     });
 
-    // Export CSV
+    // Export CSV (Includes Cost column)
     document.getElementById("btn-export-csv").addEventListener("click", () => {
       if (items.length === 0) {
         showToast("No items to export.");
         return;
       }
-      const headers = ["Item #", "Fragrance Name", "Brand", "Concentration", "Size", "Condition", "Qty", "Listed Price", "Retail MSRP", "Status", "Warehouse"];
+      const headers = ["Item #", "Fragrance Name", "Brand", "Concentration", "Size", "Condition", "Qty", "Unit Cost", "Listed Price", "Retail MSRP", "Status", "Warehouse"];
       const rows = items.map((i) => [
         `"${(i.sku || "").replace(/"/g, '""')}"`,
         `"${(i.name || "").replace(/"/g, '""')}"`,
@@ -2215,6 +2661,7 @@
         `"${i.size}"`,
         `"${i.condition}"`,
         i.qty || 1,
+        i.cost !== null && i.cost !== undefined ? i.cost : "",
         i.listedPrice || "",
         i.retailMSRP || "",
         `"${i.status}"`,
@@ -2299,23 +2746,52 @@
     }
 
     // ==============================================================
-    // MAGIC SCAN & MAGIC DUMP ASSIST WORKFLOW
+    // MAGIC SCAN & MAGIC DUMP ASSIST WORKFLOW (MULTI-TASK PROMPT STUDIO)
     // ==============================================================
 
-    const MAGIC_SCAN_PROMPT = `Analyze the perfume boxes in the photo(s).\n\nRules:\n1. Count physical boxes only (no side panels or flaps).\n2. Exactly 6 tab-separated values per line.\n3. If ANY column value is unknown, write "Unknown" — NEVER skip columns.\n4. Keep Brand and Name strictly separate.\n\nReturn ONLY raw TSV with this header:\nBrand\tName\tConcentration\tSize\tCondition\tQuantity`;
+    const PROMPT_MATRIX = {
+      standard: {
+        name: "Standard Inbound Intake",
+        hint: "Standard 6-column intake: Brand, Name, Conc, Size, Condition, Qty.",
+        text: `Analyze the perfume boxes in the photo(s).\n\nRules:\n1. Count physical boxes only (no side panels or flaps).\n2. Exactly 6 tab-separated values per line.\n3. If ANY column value is unknown, write "Unknown" — NEVER skip columns.\n4. Keep Brand and Name strictly separate.\n\nReturn ONLY raw TSV with this header:\nBrand\tName\tConcentration\tSize\tCondition\tQuantity`
+      },
+      invoice: {
+        name: "Invoice & Cost Matching",
+        hint: "Wholesale 7-column intake: Brand, Name, Conc, Size, Condition, Qty, Unit Cost.",
+        text: `Analyze the perfume shipment photo(s) alongside any visible invoices, packing slips, or price stickers.\n\nRules:\n1. Extract fragrance identity, physical item count, and unit wholesale purchase cost where visible.\n2. If unit cost is not explicitly written, output 0 or Unknown.\n3. Exactly 7 tab-separated values per line.\n4. Keep Brand and Name strictly separate.\n\nReturn ONLY raw TSV with this header:\nBrand\tName\tConcentration\tSize\tCondition\tQuantity\tCost`
+      },
+      density: {
+        name: "High-Density Stacks",
+        hint: "High-density stacked inventory (15+ boxes): Strict layer-by-layer counting.",
+        text: `Analyze the dense stack/grid of perfume boxes in the photo(s).\n\nRules:\n1. Extreme precision counting: Verify each individual stacked layer, column, and row.\n2. Avoid double-counting multi-face perspectives of the same box.\n3. Group identical items and sum their verified physical box counts.\n4. Exactly 6 tab-separated values per line.\n5. If ANY column value is unknown, write "Unknown" — NEVER skip columns.\n\nReturn ONLY raw TSV with this header:\nBrand\tName\tConcentration\tSize\tCondition\tQuantity`
+      }
+    };
+
+    const taskSelectEl = document.getElementById("prompt-task-select");
+    const taskHintEl = document.getElementById("prompt-task-hint");
+    if (taskSelectEl && taskHintEl) {
+      taskSelectEl.addEventListener("change", () => {
+        const sel = PROMPT_MATRIX[taskSelectEl.value] || PROMPT_MATRIX.standard;
+        taskHintEl.textContent = sel.hint;
+      });
+    }
 
     const btnMagicScan = document.getElementById("btn-magic-scan");
     if (btnMagicScan) {
       btnMagicScan.addEventListener("click", async () => {
+        const mode = taskSelectEl ? taskSelectEl.value : "standard";
+        const activePreset = PROMPT_MATRIX[mode] || PROMPT_MATRIX.standard;
+        const promptText = activePreset.text;
+
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(MAGIC_SCAN_PROMPT);
+            await navigator.clipboard.writeText(promptText);
           } else {
             throw new Error("Clipboard API unavailable");
           }
         } catch (_) {
           const ta = document.createElement("textarea");
-          ta.value = MAGIC_SCAN_PROMPT;
+          ta.value = promptText;
           ta.style.position = "fixed";
           ta.style.left = "-9999px";
           document.body.appendChild(ta);
@@ -2324,7 +2800,7 @@
           document.body.removeChild(ta);
         }
 
-        showToast("✨ Prompt copied! Drop photos into chat & paste output into Magic Dump below.");
+        showToast(`✨ [${activePreset.name}] prompt copied! Opening Gemini AI chat...`);
         window.open("https://gemini.google.com", "_blank");
       });
     }
@@ -2343,7 +2819,7 @@
 
       // Identify header line
       let headerIdx = -1;
-      let brandIdx = 0, nameIdx = 1, concIdx = 2, sizeIdx = 3, condIdx = 4, qtyIdx = 5;
+      let brandIdx = 0, nameIdx = 1, concIdx = 2, sizeIdx = 3, condIdx = 4, qtyIdx = 5, costIdx = -1;
 
       for (let i = 0; i < Math.min(lines.length, 3); i++) {
         const lower = lines[i].toLowerCase();
@@ -2356,6 +2832,7 @@
           sizeIdx = headers.findIndex(h => h.includes("size") || h.includes("volume") || h.includes("oz"));
           condIdx = headers.findIndex(h => h.includes("condition"));
           qtyIdx = headers.findIndex(h => h.includes("quantity") || h.includes("qty") || h.includes("count"));
+          costIdx = headers.findIndex(h => h.includes("cost") || h.includes("wholesale") || h.includes("unit cost") || h === "price");
 
           if (brandIdx === -1) brandIdx = 0;
           if (nameIdx === -1) nameIdx = 1;
@@ -2380,8 +2857,17 @@
         const name = (cols[nameIdx] || "").trim() || "Unnamed Fragrance";
         const concentration = (cols[concIdx] || "").trim() || "EDP";
         const size = (cols[sizeIdx] || "").trim() || "3.4 oz / 100 ml";
-        const condition = (cols[condIdx] || "").trim() || "New";
+        const condition = (cols[condIdx] || "").trim() || "Brand New / Factory Sealed";
         const qty = parseInt((cols[qtyIdx] || "").trim(), 10) || 1;
+
+        let cost = null;
+        if (costIdx !== -1 && cols[costIdx] !== undefined) {
+          const rawCost = cols[costIdx].replace(/[^0-9.]/g, "");
+          cost = rawCost ? parseFloat(rawCost) : null;
+        } else if (cols.length >= 7) {
+          const rawCost = (cols[6] || "").replace(/[^0-9.]/g, "");
+          cost = rawCost ? parseFloat(rawCost) : null;
+        }
 
         newParsedItems.push({
           batchCode: null,
@@ -2390,7 +2876,8 @@
           concentration: ["EDP", "EDT", "Parfum", "Extrait", "Cologne"].includes(concentration.toUpperCase()) ? concentration.toUpperCase() : concentration,
           size,
           condition,
-          qty
+          qty,
+          cost: cost !== null && !isNaN(cost) ? cost : null
         });
       }
 
@@ -2658,6 +3145,7 @@
         laserLine.classList.add("hidden");
       }
     });
+  }
 
     // Add manual row to scanner staging table
     document.getElementById("btn-scanner-add-row").addEventListener("click", () => {
@@ -2803,6 +3291,21 @@
         };
         tdQty.appendChild(inputQty);
 
+        // Unit Cost Column in Staging Drawer
+        const tdCost = document.createElement("td");
+        tdCost.className = "py-2 px-3 text-right";
+        const inputCost = document.createElement("input");
+        inputCost.type = "number";
+        inputCost.step = "0.01";
+        inputCost.value = (item.cost !== undefined && item.cost !== null) ? item.cost : "";
+        inputCost.placeholder = "0.00";
+        inputCost.className = "w-20 px-1.5 py-1 bg-slate-950 border border-slate-700 rounded text-sky-300 font-mono text-xs text-right focus:border-purple-500";
+        inputCost.oninput = (e) => {
+          const val = e.target.value.trim();
+          scannedItems[index].cost = val !== "" ? parseFloat(val) : null;
+        };
+        tdCost.appendChild(inputCost);
+
         // 7. Condition Column
         const tdCond = document.createElement("td");
         tdCond.className = "py-2 px-3";
@@ -2833,6 +3336,7 @@
         tr.appendChild(tdConc);
         tr.appendChild(tdSize);
         tr.appendChild(tdQty);
+        tr.appendChild(tdCost);
         tr.appendChild(tdCond);
         tr.appendChild(tdDel);
 
@@ -2859,11 +3363,13 @@
           const newStatus = b.existingMatch.status === "Sold" 
             ? (b.existingMatch.listedPrice ? "In Stock" : "Needs Price") 
             : b.existingMatch.status;
+          const newCost = (b.existingMatch.cost !== null && b.existingMatch.cost !== undefined) ? b.existingMatch.cost : b.cost;
 
           if (window.sbClient && currentUser) {
             try {
               await window.sbClient.from("inventory").update({
                 qty: newQty,
+                cost: newCost,
                 status: newStatus,
                 updated_at: new Date().toISOString()
               }).eq("id", b.existingMatch.id);
@@ -2874,6 +3380,7 @@
           const localItem = items.find((it) => it.id === b.existingMatch.id);
           if (localItem) {
             localItem.qty = newQty;
+            localItem.cost = newCost;
             localItem.status = newStatus;
           }
         } else {
@@ -2881,6 +3388,7 @@
           const assignedSku = "Item-" + nextInt;
           nextInt++;
 
+          const unitCost = (b.cost !== undefined && b.cost !== null) ? Number(b.cost) : null;
           const newRow = {
             id: `ARM-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             sku: assignedSku,
@@ -2890,6 +3398,7 @@
             size: b.size || "3.4 oz / 100 ml (Standard Full Size)",
             condition: b.condition || "Brand New / Factory Sealed",
             qty: Number(b.qty) || 1,
+            cost: unitCost,
             listed_price: null,
             retail_msrp: null,
             status: "Needs Price",
@@ -2914,6 +3423,8 @@
             size: newRow.size,
             condition: newRow.condition,
             qty: newRow.qty,
+            cost: unitCost,
+            unit_cost: unitCost,
             listedPrice: null,
             retailMSRP: null,
             status: "Needs Price",
@@ -2959,6 +3470,7 @@
       skuInput.value = "Item-" + getNextItemSequence(items);
       skuInput.readOnly = true;
       document.getElementById("bottle-qty").value = "1";
+      document.getElementById("bottle-cost").value = "";
       const statusSelect = document.getElementById("bottle-status");
       if (statusSelect) {
         statusSelect.value = "Needs Price";
