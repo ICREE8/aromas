@@ -585,19 +585,15 @@
       Showing <strong id="label-shown-count" class="text-white font-mono-num">0</strong> of <strong id="label-total-count" class="text-white font-mono-num">0</strong> bottles
     </div>
 
-    <!-- Dedicated Full-Width Search Input -->
-    <div class="relative w-full mb-3">
-      <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
+    <!-- Dedicated Full-Width Search Input (Sticky Viewport Anchor) -->
+    <div class="sticky top-0 z-30 pt-2 pb-2.5 mb-2 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 shadow-md transition-all">
+      <div class="relative w-full">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <input id="search-input" type="text" class="w-full h-11 pl-10 pr-10 bg-slate-900/90 border border-slate-750 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg text-sm text-slate-100 placeholder-slate-400 outline-none transition-all" placeholder="Search brand, fragrance name, size...">
+        <button id="btn-clear-search" type="button" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
       </div>
-      <input id="search-input" type="text" class="w-full h-11 pl-10 pr-10 bg-slate-900/90 border border-slate-750 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg text-sm text-slate-100 placeholder-slate-400 outline-none transition-all" placeholder="Search brand, fragrance name, size...">
-      <button id="btn-clear-search" type="button" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
     </div>
 
     <section class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 overflow-hidden shadow-xl">
@@ -2655,14 +2651,16 @@
         const isNeedsListing = it.status === "Needs Listing";
 
         const tr = document.createElement("tr");
-        tr.className = `border-b border-slate-800/60 ${
+        tr.dataset.itemId = it.id;
+        tr.setAttribute("data-item-id", it.id);
+        tr.className = `border-b border-slate-800/60 cursor-pointer hover:bg-slate-800/50 active:bg-slate-800/80 transition-colors ${
           isSold
             ? "opacity-60 bg-slate-950/20"
             : isNeedsPrice
-            ? "bg-amber-500/[0.02] hover:bg-amber-500/[0.05]"
+            ? "bg-amber-500/[0.02]"
             : isNeedsListing
-            ? "bg-amber-500/[0.02] hover:bg-amber-500/[0.05]"
-            : "hover:bg-slate-800/30"
+            ? "bg-amber-500/[0.02]"
+            : ""
         }`;
 
         // Item #
@@ -2751,13 +2749,13 @@
         tdCost.className = "py-3 px-4 text-right";
         
         const costContainer = document.createElement("div");
-        costContainer.className = "inline-flex items-center justify-end font-mono-num font-bold text-sky-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-sky-500/50 px-2 py-1 rounded transition-colors";
+        costContainer.className = "no-row-click inline-flex items-center justify-end font-mono-num font-bold text-sky-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-sky-500/50 px-2 py-1 rounded transition-colors";
         costContainer.dataset.itemId = it.id;
         costContainer.dataset.field = "cost";
         costContainer.title = "Click to edit unit cost";
 
         if (it.cost === null || it.cost === undefined || Number(it.cost) === 0) {
-          costContainer.className = "inline-flex items-center justify-end font-mono text-xs text-slate-500 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-sky-500/50 px-2 py-1 rounded transition-colors";
+          costContainer.className = "no-row-click inline-flex items-center justify-end font-mono text-xs text-slate-500 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-sky-500/50 px-2 py-1 rounded transition-colors";
           costContainer.textContent = "—";
         } else {
           costContainer.textContent = formatMoney(it.cost);
@@ -2773,13 +2771,13 @@
         tdListed.className = "py-3 px-4 text-right";
         
         const listedContainer = document.createElement("div");
-        listedContainer.className = "inline-flex items-center justify-end font-mono-num font-bold text-emerald-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-emerald-500/50 px-2 py-1 rounded transition-colors";
+        listedContainer.className = "no-row-click inline-flex items-center justify-end font-mono-num font-bold text-emerald-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-emerald-500/50 px-2 py-1 rounded transition-colors";
         listedContainer.dataset.itemId = it.id;
         listedContainer.dataset.field = "listed_price";
         listedContainer.title = "Click to edit listed price";
 
         if (it.listedPrice === null || it.listedPrice === undefined || Number(it.listedPrice) === 0) {
-          listedContainer.className = "inline-flex items-center justify-end font-mono text-xs font-semibold text-amber-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-emerald-500/50 px-2 py-1 rounded transition-colors";
+          listedContainer.className = "no-row-click inline-flex items-center justify-end font-mono text-xs font-semibold text-amber-400 cursor-pointer hover:bg-slate-800/80 hover:ring-1 hover:ring-emerald-500/50 px-2 py-1 rounded transition-colors";
           listedContainer.textContent = "—";
         } else {
           listedContainer.textContent = formatMoney(it.listedPrice);
@@ -4178,6 +4176,19 @@
       renderTable();
     });
 
+    // Delegated row click to open Studio modal (ignoring nested buttons/inputs)
+    document.getElementById("inventory-table-body")?.addEventListener("click", (e) => {
+      if (e.target.closest("button, select, input, a, .no-row-click")) return;
+      const tr = e.target.closest("tr");
+      if (!tr || !tr.dataset.itemId) return;
+      const itemId = tr.dataset.itemId;
+      if (typeof window.openListingStudio === "function") {
+        window.openListingStudio(itemId);
+      } else if (typeof openListingStudio === "function") {
+        openListingStudio(itemId);
+      }
+    });
+
     // ==============================================================
     // 8. PHASE 3 & 4: LISTING STUDIO & MARKETPLACE SEO GENERATOR
     // ==============================================================
@@ -4539,6 +4550,7 @@
       renderStudioPhotoSlots();
       document.getElementById("modal-listing-studio").classList.remove("hidden");
     };
+    window.openStudioModal = window.openListingStudio;
 
     function updateStudioTitleCount() {
       const title = document.getElementById("studio-title")?.value || "";
