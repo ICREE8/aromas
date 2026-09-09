@@ -7,6 +7,17 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'slate-750': '#243044',
+          }
+        }
+      }
+    };
+  </script>
   
   <!-- Supabase Official JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,6 +28,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   
   <style>
+    .border-slate-750 {
+      border-color: #243044;
+    }
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: #0b0f19;
@@ -243,7 +257,7 @@
       <!-- User Profile Identity & Logout Exclusively (Visible when authenticated) -->
       <div id="header-actions" class="hidden flex items-center gap-3">
         <span id="user-email-display" class="text-[11px] text-slate-400 font-mono hidden sm:inline"></span>
-        <button id="btn-logout" class="text-[11px] font-semibold text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-lg hover:bg-rose-500/10 border border-rose-500/20 transition-all cursor-pointer">
+        <button id="btn-logout" class="w-[132px] h-9 shrink-0 text-xs font-medium rounded-lg border border-rose-500/30 text-rose-300 shadow-[0_0_10px_rgba(244,63,94,0.15)] hover:border-rose-400 hover:text-rose-200 hover:shadow-[0_0_14px_rgba(244,63,94,0.3)] bg-slate-900/90 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap">
           Sign Out
         </button>
       </div>
@@ -308,9 +322,9 @@
         <span class="text-[10px] font-bold tracking-wider uppercase text-slate-400">Metrics</span>
         <span id="kpi-summary-preview" class="text-slate-300 font-mono text-[11px] truncate">-- Units • $0.00</span>
       </div>
-      <button id="btn-toggle-kpi-deck" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 active:scale-95 text-slate-200 border border-slate-700/60 shadow-sm transition-all cursor-pointer">
-        <span id="kpi-toggle-text" class="text-[11px] font-medium">Show Deck</span>
-        <svg id="kpi-toggle-icon" class="w-3.5 h-3.5 transition-transform duration-300 ease-out text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button id="btn-toggle-kpi-deck" type="button" class="w-[132px] h-9 shrink-0 text-xs font-medium rounded-lg border border-emerald-500/25 text-slate-200 shadow-[0_0_10px_rgba(16,185,129,0.12)] hover:border-emerald-400/50 hover:text-white hover:shadow-[0_0_14px_rgba(16,185,129,0.25)] bg-slate-800/90 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap">
+        <span id="kpi-toggle-text" class="truncate whitespace-nowrap text-xs">Show Deck</span>
+        <svg id="kpi-toggle-icon" class="w-3.5 h-3.5 transition-transform duration-300 ease-out text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
@@ -387,9 +401,9 @@
             <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400">Brand Exposure</span>
             <span id="brand-summary-preview" class="text-slate-300 font-mono text-[11px] truncate"></span>
           </div>
-          <button id="btn-toggle-brands" type="button" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 text-[11px] font-medium transition-all cursor-pointer">
-            <span id="brand-toggle-text">Show Brands</span>
-            <svg id="brand-toggle-icon" class="w-3.5 h-3.5 text-emerald-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="btn-toggle-brands" type="button" class="w-[132px] h-9 shrink-0 text-xs font-medium rounded-lg border border-emerald-500/25 text-slate-200 shadow-[0_0_10px_rgba(16,185,129,0.12)] hover:border-emerald-400/50 hover:text-white hover:shadow-[0_0_14px_rgba(16,185,129,0.25)] bg-slate-800/90 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap">
+            <span id="brand-toggle-text" class="truncate whitespace-nowrap text-xs">Show Brands</span>
+            <svg id="brand-toggle-icon" class="w-3.5 h-3.5 text-emerald-400 transition-transform duration-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
@@ -408,9 +422,9 @@
             <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400">Condition</span>
             <span id="concentration-summary-preview" class="text-slate-300 font-mono text-[11px] truncate"></span>
           </div>
-          <button id="btn-toggle-concentration" type="button" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 text-[11px] font-medium transition-all cursor-pointer">
-            <span id="concentration-toggle-text">Show Breakdown</span>
-            <svg id="concentration-toggle-icon" class="w-3.5 h-3.5 text-emerald-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="btn-toggle-concentration" type="button" class="w-[132px] h-9 shrink-0 text-xs font-medium rounded-lg border border-emerald-500/25 text-slate-200 shadow-[0_0_10px_rgba(16,185,129,0.12)] hover:border-emerald-400/50 hover:text-white hover:shadow-[0_0_14px_rgba(16,185,129,0.25)] bg-slate-800/90 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap">
+            <span id="concentration-toggle-text" class="truncate whitespace-nowrap text-xs">Show Breakdown</span>
+            <svg id="concentration-toggle-icon" class="w-3.5 h-3.5 text-emerald-400 transition-transform duration-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
@@ -444,76 +458,101 @@
       </div>
     </div>
 
-    <!-- Task 1: Positioned Action Toolbar Directly ABOVE Search & Filter -->
-    <section id="action-toolbar" class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-      <div class="flex flex-wrap items-center gap-2.5">
-        <button id="btn-open-import" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-950/60 text-blue-300 border border-blue-600/40 hover:bg-blue-900/60 transition-all shadow-sm cursor-pointer">
-          <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+    <!-- Quick Actions Collapsible Drawer -->
+    <div id="action-toolbar" class="rounded-xl border border-slate-800 bg-slate-900/60 p-3 mb-3 transition-all">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-[11px] font-bold tracking-wider uppercase text-slate-400">Quick Actions</span>
+          <span class="text-slate-400 font-mono text-[11px] truncate">Sheets, Vision, Statements & Add</span>
+        </div>
+        <button id="btn-toggle-actions" type="button" class="w-[132px] h-9 shrink-0 text-xs font-medium rounded-lg border border-emerald-500/25 text-slate-200 shadow-[0_0_10px_rgba(16,185,129,0.12)] hover:border-emerald-400/50 hover:text-white hover:shadow-[0_0_14px_rgba(16,185,129,0.25)] bg-slate-800/90 flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap">
+          <span id="actions-toggle-text" class="truncate whitespace-nowrap text-xs">Show Actions</span>
+          <svg id="actions-toggle-icon" class="w-3.5 h-3.5 transition-transform duration-300 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
-          Import from Google Sheet
-        </button>
-
-        <button id="btn-copy-sheets" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900/60 transition-all shadow-sm cursor-pointer">
-          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          Copy for Google Sheets
-        </button>
-
-        <button id="btn-export-csv" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-all cursor-pointer">
-          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-          </svg>
-          Export CSV
-        </button>
-
-        <button id="btn-open-sales-sheet" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/60 shadow-sm transition-all cursor-pointer">
-          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-          <span>Sales Statement</span>
         </button>
       </div>
+      <div id="actions-accordion" class="kpi-accordion-grid">
+        <div class="kpi-accordion-inner pt-3 border-t border-slate-800/60 mt-3">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2 items-center">
+            <!-- 1) Import Sheets -->
+            <button id="btn-import-sheet" data-legacy-id="btn-open-import" type="button" class="h-10 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 w-full lg:w-auto transition-all bg-blue-950/60 text-blue-300 border border-blue-600/40 hover:bg-blue-900/60 shadow-sm cursor-pointer">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <span>Import Sheets</span>
+            </button>
 
-      <div class="flex flex-wrap items-center gap-2.5">
-        <button id="btn-open-scanner" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-purple-900/80 via-indigo-900/80 to-teal-900/80 hover:from-purple-800 hover:to-teal-800 text-white border border-purple-500/50 shadow-lg shadow-purple-500/10 transition-all active:scale-95 cursor-pointer">
-          <span>✨</span>
-          <span>AI Vision Assist</span>
-          <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-purple-500/30 text-purple-200 font-bold border border-purple-400/40">Prompt Studio</span>
-        </button>
+            <!-- 2) Copy Sheets -->
+            <button id="btn-copy-sheet" data-legacy-id="btn-copy-sheets" type="button" class="h-10 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 w-full lg:w-auto transition-all bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900/60 shadow-sm cursor-pointer">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy Sheets</span>
+            </button>
 
-        <button id="btn-open-add" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
-          </svg>
-          Add Bottle
-        </button>
+            <!-- 3) Export CSV -->
+            <button id="btn-export-csv" type="button" class="h-10 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 w-full lg:w-auto transition-all bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 cursor-pointer">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              <span>Export CSV</span>
+            </button>
+
+            <!-- 4) Statement -->
+            <button id="btn-open-sales-statement" data-legacy-id="btn-open-sales-sheet" type="button" class="h-10 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 w-full lg:w-auto transition-all bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/60 shadow-sm cursor-pointer">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <span>Statement</span>
+            </button>
+
+            <!-- 5) AI Vision -->
+            <button id="btn-vision-studio" data-legacy-id="btn-open-scanner" type="button" class="h-10 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 w-full lg:w-auto transition-all bg-gradient-to-r from-purple-900/80 via-indigo-900/80 to-teal-900/80 hover:from-purple-800 hover:to-teal-800 text-white border border-purple-500/50 shadow-lg shadow-purple-500/10 active:scale-95 cursor-pointer">
+              <span>✨</span>
+              <span>AI Vision</span>
+            </button>
+
+            <!-- 6) Add Bottle -->
+            <button id="btn-add-bottle" data-legacy-id="btn-open-add" type="button" class="h-10 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 w-full lg:w-auto transition-all bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-500/20 active:scale-95 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <span>Add Bottle</span>
+            </button>
+
+            <!-- 7) Financials -->
+            <button id="btn-open-financials" type="button" class="h-10 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 w-full lg:w-auto transition-all bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 cursor-pointer">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>Financials</span>
+            </button>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <!-- 3. Search & Filter Bar with Task 1 Needs Price Quick Pill -->
-    <section class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-sm">
-      <div class="relative flex-1 flex items-center gap-3">
-        <input id="search-input" type="text" placeholder="Search cologne name, brand, SKU..." class="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-all">
-        
+    <!-- 3. Standardized Filter Controls -->
+    <section class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 p-4 shadow-sm">
+      <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 items-center">
         <!-- Task 1 KPI Quick Filter Pill -->
-        <div id="badge-needs-price-count" onclick="filterByNeedsPrice()" class="cursor-pointer px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1.5 hover:bg-amber-500/25 transition-all shrink-0">
+        <button id="badge-needs-price-count" onclick="filterByNeedsPrice()" type="button" class="h-10 px-3 text-xs font-medium rounded-lg border border-slate-750 bg-slate-900/80 flex items-center justify-center min-w-0 w-full sm:w-auto text-amber-400 gap-1.5 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer">
           <span>⚠️</span>
           <span id="count-needs-price">0 Need Pricing</span>
-        </div>
+        </button>
 
         <!-- Task 2.2: Needs Listing KPI Filter Pill -->
-        <button id="badge-needs-listing-count" onclick="filterByNeedsListing()" class="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition-all shrink-0 cursor-pointer">📝 0 Need Listing</button>
-      </div>
+        <button id="badge-needs-listing-count" onclick="filterByNeedsListing()" type="button" class="h-10 px-3 text-xs font-medium rounded-lg border border-slate-750 bg-slate-900/80 flex items-center justify-center min-w-0 w-full sm:w-auto text-amber-300 gap-1.5 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer">
+          📝 0 Need Listing
+        </button>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <select id="filter-brand" class="px-3 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-emerald-500">
+        <select id="filter-brand" class="h-10 px-3 text-xs font-medium rounded-lg border border-slate-750 bg-slate-900/80 flex items-center justify-center min-w-0 w-full sm:w-auto text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer">
           <option value="ALL">All Brands</option>
         </select>
 
-        <select id="filter-type" class="px-3 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-emerald-500">
+        <select id="filter-type" class="h-10 px-3 text-xs font-medium rounded-lg border border-slate-750 bg-slate-900/80 flex items-center justify-center min-w-0 w-full sm:w-auto text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer">
           <option value="ALL">All Types</option>
           <option value="EDP">EDP</option>
           <option value="EDT">EDT</option>
@@ -522,7 +561,7 @@
           <option value="Cologne">Cologne</option>
         </select>
 
-        <select id="filter-status" class="px-3 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-emerald-500">
+        <select id="filter-status" class="h-10 px-3 text-xs font-medium rounded-lg border border-slate-750 bg-slate-900/80 flex items-center justify-center min-w-0 w-full sm:w-auto text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer">
           <option value="ALL">All Status</option>
           <option value="In Stock">In Stock</option>
           <option value="Needs Price">⚠️ Needs Price</option>
@@ -530,7 +569,7 @@
           <option value="Sold">Sold</option>
         </select>
 
-        <select id="filter-sort" class="px-3 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-emerald-500">
+        <select id="filter-sort" class="h-10 px-3 text-xs font-medium rounded-lg border border-slate-750 bg-slate-900/80 flex items-center justify-center min-w-0 w-full sm:w-auto text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer">
           <option value="item-asc" selected>Item # (Lowest First)</option>
           <option value="item-desc">Item # (Highest / Newest First)</option>
           <option value="price-desc">Price: High to Low</option>
@@ -541,33 +580,24 @@
       </div>
     </section>
 
-    <!-- 4. Master Inventory Table Header Counter & Financial Summary Ribbon -->
-    <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-      <div>
-        Showing <strong id="label-shown-count" class="text-white font-mono-num">0</strong> of <strong id="label-total-count" class="text-white font-mono-num">0</strong> bottles
-      </div>
-      <div id="ribbon-financial-summary" class="flex items-center gap-2 ml-auto">
-        <!-- Collapsible Content (Starts closed) -->
-        <div id="financial-ribbon-content" class="hidden flex-wrap items-center gap-2.5 text-[11px] bg-slate-900/80 border border-slate-800 px-3 py-1 rounded-lg">
-          <span id="metric-sold" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">
-            0 Sold
-          </span>
-          <span class="text-slate-600">•</span>
-          <span>Total Cost: <strong id="ribbon-total-cost" class="text-sky-400 font-mono-num">$0.00</strong></span>
-          <span class="text-slate-600">•</span>
-          <span>Listed Value: <strong id="ribbon-total-listed" class="text-emerald-400 font-mono-num">$0.00</strong></span>
-          <span class="text-slate-600">•</span>
-          <span>Unrealized Margin: <strong id="ribbon-total-margin" class="text-teal-300 font-mono-num">$0.00</strong></span>
-        </div>
+    <!-- 4. Master Inventory Table Header Counter -->
+    <div class="w-full text-xs text-slate-400">
+      Showing <strong id="label-shown-count" class="text-white font-mono-num">0</strong> of <strong id="label-total-count" class="text-white font-mono-num">0</strong> bottles
+    </div>
 
-        <!-- Toggle Button with Chevron Arrow -->
-        <button id="btn-toggle-financials" type="button" class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors bg-slate-900/60 hover:bg-slate-800 border border-slate-800 px-2.5 py-1 rounded-lg cursor-pointer select-none">
-          <span class="text-[11px] font-medium">Financials</span>
-          <svg id="icon-toggle-financials" class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </button>
+    <!-- Dedicated Full-Width Search Input -->
+    <div class="relative w-full mb-3">
+      <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
       </div>
+      <input id="search-input" type="text" class="w-full h-11 pl-10 pr-10 bg-slate-900/90 border border-slate-750 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-lg text-sm text-slate-100 placeholder-slate-400 outline-none transition-all" placeholder="Search brand, fragrance name, size...">
+      <button id="btn-clear-search" type="button" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
 
     <section class="bg-[#111827]/90 rounded-2xl border border-slate-800/90 overflow-hidden shadow-xl">
@@ -1236,10 +1266,88 @@
   </div>
 
   <!-- ========================================================= -->
+  <!-- MODAL: Active Inventory Financials                         -->
+  <!-- ========================================================= -->
+  <div id="modal-financials" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-800 w-full max-w-lg rounded-2xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-emerald-400 text-lg">💰</span>
+          <h4 class="text-sm font-bold text-white">Active Inventory Financials</h4>
+        </div>
+        <button id="btn-close-financials" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">✕</button>
+      </div>
+
+      <!-- 3 Clean KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- 1) Total Invested Cost -->
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col justify-between space-y-1">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Total Cost</span>
+          <strong id="modal-total-cost" class="text-base font-bold text-sky-400 font-mono-num">$0.00</strong>
+          <span class="text-[10px] text-slate-400">Total Invested Cost</span>
+        </div>
+
+        <!-- 2) Total Listed Value -->
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col justify-between space-y-1">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Listed Value</span>
+          <strong id="modal-total-listed" class="text-base font-bold text-emerald-400 font-mono-num">$0.00</strong>
+          <span class="text-[10px] text-slate-400">Current Catalog Value</span>
+        </div>
+
+        <!-- 3) Unrealized Margin -->
+        <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col justify-between space-y-1">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Unrealized Margin</span>
+          <strong id="modal-total-margin" class="text-base font-bold text-teal-300 font-mono-num">$0.00</strong>
+          <span class="text-[10px] text-slate-400">Potential Gross Profit</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end pt-2 border-t border-slate-800">
+        <button id="btn-cancel-financials" type="button" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors cursor-pointer">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
   <!-- JAVASCRIPT LOGIC & SUPABASE INTEGRATION                   -->
   <!-- ========================================================= -->
   <script>
     console.log("Aromas Dashboard script initializing...");
+
+    // Dual ID resolver for quick action buttons (backward & forward compatibility)
+    const btnIdMap = {
+      'btn-open-import': 'btn-import-sheet',
+      'btn-copy-sheets': 'btn-copy-sheet',
+      'btn-open-sales-sheet': 'btn-open-sales-statement',
+      'btn-open-scanner': 'btn-vision-studio',
+      'btn-open-add': 'btn-add-bottle',
+      'btn-import-sheet': 'btn-open-import',
+      'btn-copy-sheet': 'btn-copy-sheets',
+      'btn-open-sales-statement': 'btn-open-sales-sheet',
+      'btn-vision-studio': 'btn-open-scanner',
+      'btn-add-bottle': 'btn-open-add',
+      'btn-sign-out': 'btn-logout',
+      'btn-logout': 'btn-sign-out'
+    };
+    const _origGetById = document.getElementById.bind(document);
+    document.getElementById = function(id) {
+      const el = _origGetById(id);
+      if (el) return el;
+      if (btnIdMap[id]) return _origGetById(btnIdMap[id]);
+      return null;
+    };
+    const _origQuerySelector = document.querySelector.bind(document);
+    document.querySelector = function(sel) {
+      const el = _origQuerySelector(sel);
+      if (el) return el;
+      if (typeof sel === 'string' && sel.startsWith('#')) {
+        const rawId = sel.slice(1);
+        if (btnIdMap[rawId]) return _origQuerySelector('#' + btnIdMap[rawId]);
+      }
+      return null;
+    };
 
     // ==============================================================
     // 1. CONFIGURATION & CREDENTIALS
@@ -1961,13 +2069,13 @@
       const savingsPctEl = document.getElementById("metric-savings-pct");
       if (savingsPctEl) savingsPctEl.textContent = `${savingsPct.toFixed(1)}% OFF`;
 
-      // Financial Summary Ribbon in Master Table Header
-      const ribbonCost = document.getElementById("ribbon-total-cost");
-      if (ribbonCost) ribbonCost.textContent = formatMoney(costSum);
-      const ribbonListed = document.getElementById("ribbon-total-listed");
-      if (ribbonListed) ribbonListed.textContent = formatMoney(listedSum);
-      const ribbonMargin = document.getElementById("ribbon-total-margin");
-      if (ribbonMargin) ribbonMargin.textContent = formatMoney(grossMargin);
+      // Active Inventory Financials Modal Telemetry
+      const modalCost = document.getElementById("modal-total-cost");
+      if (modalCost) modalCost.textContent = formatMoney(costSum);
+      const modalListed = document.getElementById("modal-total-listed");
+      if (modalListed) modalListed.textContent = formatMoney(listedSum);
+      const modalMargin = document.getElementById("modal-total-margin");
+      if (modalMargin) modalMargin.textContent = formatMoney(grossMargin);
 
       // Task 1 & 2: Quick Filter Pill Count Updates
       const needsPricePillCount = document.getElementById("count-needs-price");
@@ -4019,11 +4127,36 @@
     });
 
     // Live search & filters
-    ["search-input", "filter-brand", "filter-type", "filter-status", "filter-sort"].forEach((id) => {
-      document.getElementById(id).addEventListener("input", () => {
+    const searchInput = document.getElementById("search-input");
+    const btnClearSearch = document.getElementById("btn-clear-search");
+
+    if (searchInput && btnClearSearch) {
+      const toggleClearBtn = () => {
+        if (searchInput.value.trim().length > 0) {
+          btnClearSearch.classList.remove("hidden");
+        } else {
+          btnClearSearch.classList.add("hidden");
+        }
+      };
+      searchInput.addEventListener("input", toggleClearBtn);
+
+      btnClearSearch.addEventListener("click", () => {
+        searchInput.value = "";
+        btnClearSearch.classList.add("hidden");
         currentPage = 1;
         renderTable();
+        searchInput.focus();
       });
+    }
+
+    ["search-input", "filter-brand", "filter-type", "filter-status", "filter-sort"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("input", () => {
+          currentPage = 1;
+          renderTable();
+        });
+      }
     });
 
     // Pagination controls
@@ -5208,20 +5341,19 @@ ${desc}`;
       renderSalesStatement();
     });
 
-    // Toggle Financial Summary Ribbon Drawer
-    document.getElementById("btn-toggle-financials")?.addEventListener("click", () => {
-      const content = document.getElementById("financial-ribbon-content");
-      const icon = document.getElementById("icon-toggle-financials");
-      if (!content) return;
-      const isHidden = content.classList.contains("hidden");
-      if (isHidden) {
-        content.classList.remove("hidden");
-        content.classList.add("flex");
-        icon?.classList.add("rotate-180");
-      } else {
-        content.classList.add("hidden");
-        content.classList.remove("flex");
-        icon?.classList.remove("rotate-180");
+    // Active Inventory Financials Modal UI Handlers
+    document.getElementById("btn-open-financials")?.addEventListener("click", () => {
+      document.getElementById("modal-financials")?.classList.remove("hidden");
+    });
+    document.getElementById("btn-close-financials")?.addEventListener("click", () => {
+      document.getElementById("modal-financials")?.classList.add("hidden");
+    });
+    document.getElementById("btn-cancel-financials")?.addEventListener("click", () => {
+      document.getElementById("modal-financials")?.classList.add("hidden");
+    });
+    document.getElementById("modal-financials")?.addEventListener("click", (e) => {
+      if (e.target.id === "modal-financials") {
+        document.getElementById("modal-financials").classList.add("hidden");
       }
     });
 
@@ -5328,6 +5460,41 @@ ${desc}`;
       setConcentrationDrawerState(savedConcState);
     } catch (e) {
       setConcentrationDrawerState(false);
+    }
+
+    // Toggle Quick Actions Accordion Drawer
+    const actionsAccordion = document.getElementById("actions-accordion");
+    const btnToggleActions = document.getElementById("btn-toggle-actions");
+    const actionsToggleText = document.getElementById("actions-toggle-text");
+    const actionsToggleIcon = document.getElementById("actions-toggle-icon");
+
+    function setActionsDrawerState(isOpen) {
+      if (!actionsAccordion) return;
+      if (isOpen) {
+        actionsAccordion.classList.add("open");
+        actionsToggleIcon?.classList.add("rotate-180");
+        if (actionsToggleText) actionsToggleText.textContent = "Hide Actions";
+      } else {
+        actionsAccordion.classList.remove("open");
+        actionsToggleIcon?.classList.remove("rotate-180");
+        if (actionsToggleText) actionsToggleText.textContent = "Show Actions";
+      }
+      try {
+        localStorage.setItem("vault_actions_open", isOpen ? "true" : "false");
+      } catch (e) {}
+    }
+
+    btnToggleActions?.addEventListener("click", () => {
+      const isCurrentlyOpen = actionsAccordion?.classList.contains("open");
+      setActionsDrawerState(!isCurrentlyOpen);
+    });
+
+    // Initialize state from localStorage (default closed)
+    try {
+      const savedActionsState = localStorage.getItem("vault_actions_open") === "true";
+      setActionsDrawerState(savedActionsState);
+    } catch (e) {
+      setActionsDrawerState(false);
     }
 
     // Check active session on boot
